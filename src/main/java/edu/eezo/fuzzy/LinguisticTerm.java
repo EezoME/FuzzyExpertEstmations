@@ -54,11 +54,11 @@ public class LinguisticTerm {
     /**
      * Generates default term list.
      * Depending on the <code>termsCount</code> uses:
-     * <li>for 3 terms - <code>generateListWithThreeTerms()</code> - "L, M, H"</li>
-     * <li>for 4 terms - <code>generateListWithFourTerms()</code> - "L, ML, MH, H"</li>
-     * <li>for 5 terms - <code>generateListWithFiveTerms()</code> - "VL, L, M, H, VH"</li>
-     * <li>for 6 terms - <code>generateListWithSixTerms()</code> - "VL, L, ML, MH, H, VH"</li>
-     * <li>for 7 terms - <code>generateListWithSevenTerms()</code> - "VL, L, ML, M, MH, H, VH"</li>
+     * <li>for 3 terms - <code>generateListWithThreeTerms()</code> - "Н, С, В"</li>
+     * <li>for 4 terms - <code>generateListWithFourTerms()</code> - "Н, НС, ВС, В"</li>
+     * <li>for 5 terms - <code>generateListWithFiveTerms()</code> - "ОН, Н, С, В, ОВ"</li>
+     * <li>for 6 terms - <code>generateListWithSixTerms()</code> - "ОН, Н, НС, ВС, В, ОВ"</li>
+     * <li>for 7 terms - <code>generateListWithSevenTerms()</code> - "ОН, Н, НС, С, ВС, В, ОВ"</li>
      *
      * @param termsCount a number of terms to generate
      * @return generated linguistic term list
@@ -74,86 +74,86 @@ public class LinguisticTerm {
     }
 
     /**
-     * Generates a list of 3 linguistic terms: "L, M, H"
+     * Generates a list of 3 linguistic terms: "Н, С, В"
      *
      * @return a list of linguistic terms
      */
     public static List<LinguisticTerm> generateListWithThreeTerms() {
         List<LinguisticTerm> list = new ArrayList<>();
 
-        list.add(new LinguisticTerm("Low", "L", LTType.TRIANGULAR, new double[]{0.0, 0.0, 0.5}));
-        list.add(new LinguisticTerm("Medium", "M", LTType.TRIANGULAR, new double[]{0.0, 0.5, 1.0}));
-        list.add(new LinguisticTerm("High", "H", LTType.TRIANGULAR, new double[]{0.5, 1.0, 1.0}));
+        list.add(new LinguisticTerm("Низкий", "Н", LTType.TRIANGULAR, new double[]{0.0, 0.0, 0.5}));
+        list.add(new LinguisticTerm("Средний", "С", LTType.TRIANGULAR, new double[]{0.0, 0.5, 1.0}));
+        list.add(new LinguisticTerm("Высокий", "В", LTType.TRIANGULAR, new double[]{0.5, 1.0, 1.0}));
 
         return list;
     }
 
     /**
-     * Generates a list of 4 linguistic terms: "L, ML, MH, H"
+     * Generates a list of 4 linguistic terms: "Н, НС, ВС, В"
      *
      * @return a list of linguistic terms
      */
     public static List<LinguisticTerm> generateListWithFourTerms() {
         List<LinguisticTerm> list = new ArrayList<>();
 
-        list.add(new LinguisticTerm("Low", "L", LTType.TRIANGULAR, new double[]{0.0, 0.0, 0.33}));
-        list.add(new LinguisticTerm("Medium Low", "ML", LTType.TRIANGULAR, new double[]{0.0, 0.33, 0.67}));
-        list.add(new LinguisticTerm("Medium High", "MH", LTType.TRIANGULAR, new double[]{0.33, 0.67, 1.0}));
-        list.add(new LinguisticTerm("High", "H", LTType.TRIANGULAR, new double[]{0.67, 1.0, 1.0}));
+        list.add(new LinguisticTerm("Низкий", "Н", LTType.TRIANGULAR, new double[]{0.0, 0.0, 0.33}));
+        list.add(new LinguisticTerm("Ниже среднего", "НС", LTType.TRIANGULAR, new double[]{0.0, 0.33, 0.67}));
+        list.add(new LinguisticTerm("Выше среднего", "ВС", LTType.TRIANGULAR, new double[]{0.33, 0.67, 1.0}));
+        list.add(new LinguisticTerm("Высокий", "В", LTType.TRIANGULAR, new double[]{0.67, 1.0, 1.0}));
 
         return list;
     }
 
     /**
-     * Generates a list of 5 linguistic terms: "VL, L, M, H, VH"
+     * Generates a list of 5 linguistic terms: "ОН, Н, С, В, ОВ"
      *
      * @return a list of linguistic terms
      */
     public static List<LinguisticTerm> generateListWithFiveTerms() {
         List<LinguisticTerm> list = new ArrayList<>();
 
-        list.add(new LinguisticTerm("Very Low", "VL", LTType.TRIANGULAR, new double[]{0.0, 0.0, 0.25}));
-        list.add(new LinguisticTerm("Low", "L", LTType.TRIANGULAR, new double[]{0.0, 0.25, 0.5}));
-        list.add(new LinguisticTerm("Medium", "M", LTType.TRIANGULAR, new double[]{0.25, 0.5, 0.75}));
-        list.add(new LinguisticTerm("High", "H", LTType.TRIANGULAR, new double[]{0.5, 0.75, 1.0}));
-        list.add(new LinguisticTerm("Very High", "VH", LTType.TRIANGULAR, new double[]{0.75, 1.0, 1.0}));
+        list.add(new LinguisticTerm("Очень низкий", "ОН", LTType.TRIANGULAR, new double[]{0.0, 0.0, 0.25}));
+        list.add(new LinguisticTerm("Низкий", "Н", LTType.TRIANGULAR, new double[]{0.0, 0.25, 0.5}));
+        list.add(new LinguisticTerm("Средний", "С", LTType.TRIANGULAR, new double[]{0.25, 0.5, 0.75}));
+        list.add(new LinguisticTerm("Высокий", "В", LTType.TRIANGULAR, new double[]{0.5, 0.75, 1.0}));
+        list.add(new LinguisticTerm("Очень высокий", "ОВ", LTType.TRIANGULAR, new double[]{0.75, 1.0, 1.0}));
 
         return list;
     }
 
     /**
-     * Generates a list of 6 linguistic terms: "VL, L, ML, MH, H, VH"
+     * Generates a list of 6 linguistic terms: "ОН, Н, НС, ВС, В, ОВ"
      *
      * @return a list of linguistic terms
      */
     public static List<LinguisticTerm> generateListWithSixTerms() {
         List<LinguisticTerm> list = new ArrayList<>();
 
-        list.add(new LinguisticTerm("Very Low", "VL", LTType.TRIANGULAR, new double[]{0.0, 0.0, 0.2}));
-        list.add(new LinguisticTerm("Low", "L", LTType.TRIANGULAR, new double[]{0.0, 0.2, 0.4}));
-        list.add(new LinguisticTerm("Medium Low", "ML", LTType.TRIANGULAR, new double[]{0.2, 0.4, 0.6}));
-        list.add(new LinguisticTerm("Medium High", "MH", LTType.TRIANGULAR, new double[]{0.4, 0.6, 0.8}));
-        list.add(new LinguisticTerm("High", "H", LTType.TRIANGULAR, new double[]{0.6, 0.8, 1.0}));
-        list.add(new LinguisticTerm("Very High", "VH", LTType.TRIANGULAR, new double[]{0.8, 1.0, 1.0}));
+        list.add(new LinguisticTerm("Очень низкий", "ОН", LTType.TRIANGULAR, new double[]{0.0, 0.0, 0.2}));
+        list.add(new LinguisticTerm("Низкий", "Н", LTType.TRIANGULAR, new double[]{0.0, 0.2, 0.4}));
+        list.add(new LinguisticTerm("Ниже среднего", "НС", LTType.TRIANGULAR, new double[]{0.2, 0.4, 0.6}));
+        list.add(new LinguisticTerm("Выше среднего", "ВС", LTType.TRIANGULAR, new double[]{0.4, 0.6, 0.8}));
+        list.add(new LinguisticTerm("Высокий", "В", LTType.TRIANGULAR, new double[]{0.6, 0.8, 1.0}));
+        list.add(new LinguisticTerm("Очень высокий", "ОВ", LTType.TRIANGULAR, new double[]{0.8, 1.0, 1.0}));
 
         return list;
     }
 
     /**
-     * Generates a list of 7 linguistic terms: "VL, L, ML, M, MH, H, VH"
+     * Generates a list of 7 linguistic terms: "ОН, Н, НС, С, ВС, В, ОВ"
      *
      * @return a list of linguistic terms
      */
     public static List<LinguisticTerm> generateListWithSevenTerms() {
         List<LinguisticTerm> list = new ArrayList<>();
 
-        list.add(new LinguisticTerm("Very Low", "VL", LTType.TRIANGULAR, new double[]{0.0, 0.0, 0.17}));
-        list.add(new LinguisticTerm("Low", "L", LTType.TRIANGULAR, new double[]{0.0, 0.17, 0.33}));
-        list.add(new LinguisticTerm("Medium Low", "ML", LTType.TRIANGULAR, new double[]{0.17, 0.33, 0.5}));
-        list.add(new LinguisticTerm("Medium", "M", LTType.TRIANGULAR, new double[]{0.33, 0.5, 0.67}));
-        list.add(new LinguisticTerm("Medium High", "MH", LTType.TRIANGULAR, new double[]{0.5, 0.67, 0.83}));
-        list.add(new LinguisticTerm("High", "H", LTType.TRIANGULAR, new double[]{0.67, 0.83, 1.0}));
-        list.add(new LinguisticTerm("Very High", "VH", LTType.TRIANGULAR, new double[]{0.83, 1.0, 1.0}));
+        list.add(new LinguisticTerm("Очень низкий", "ОН", LTType.TRIANGULAR, new double[]{0.0, 0.0, 0.17}));
+        list.add(new LinguisticTerm("Низкий", "Н", LTType.TRIANGULAR, new double[]{0.0, 0.17, 0.33}));
+        list.add(new LinguisticTerm("Ниже среднего", "НС", LTType.TRIANGULAR, new double[]{0.17, 0.33, 0.5}));
+        list.add(new LinguisticTerm("Средний", "С", LTType.TRIANGULAR, new double[]{0.33, 0.5, 0.67}));
+        list.add(new LinguisticTerm("Выше среднего", "ВС", LTType.TRIANGULAR, new double[]{0.5, 0.67, 0.83}));
+        list.add(new LinguisticTerm("Высокий", "В", LTType.TRIANGULAR, new double[]{0.67, 0.83, 1.0}));
+        list.add(new LinguisticTerm("Очень высокий", "ОВ", LTType.TRIANGULAR, new double[]{0.83, 1.0, 1.0}));
 
         return list;
     }

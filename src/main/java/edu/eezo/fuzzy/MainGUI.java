@@ -46,8 +46,9 @@ public class MainGUI extends JFrame {
     private JCheckBox checkBoxGenerateLT;
     private JProgressBar progressBarDone;
     private JButton buttonDoAlpha;
-    private JLabel labelResult;
+    private JLabel labelOptResult;
     private JTable tableConvolution;
+    private JLabel labelPesResult;
 
     private int alternativesCount;
     private int criteriaCount;
@@ -66,8 +67,8 @@ public class MainGUI extends JFrame {
 
 
     public MainGUI() {
-        super("Fuzzy Expert Estimations");
-        setSize(840, 540);
+        super("Многокритерийный метод принятия решения на основе нечётких экспертных оценок");
+        setSize(900, 540);
         setLocationRelativeTo(null);
         setContentPane(rootPanel);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -94,8 +95,8 @@ public class MainGUI extends JFrame {
         buttonAcceptCounts.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (checkTFForPositiveInteger(textFieldAlternativesCount, "Alternatives Count") ||
-                        checkTFForPositiveInteger(textFieldCriteriaCount, "Criteria Count")) {
+                if (checkTFForPositiveInteger(textFieldAlternativesCount, "Число альтернатив") ||
+                        checkTFForPositiveInteger(textFieldCriteriaCount, "Число критериев")) {
                     alternativesCount = Integer.parseInt(textFieldAlternativesCount.getText());
                     criteriaCount = Integer.parseInt(textFieldCriteriaCount.getText());
                     toggleCriteriaComponents(true);
@@ -238,7 +239,7 @@ public class MainGUI extends JFrame {
     private void saveCriteria(int index, int stage) {
         if (stage < 1) return;
         criterias[index].setName(textFieldCriteriaName.getText());
-        if (checkTFForPositiveInteger(textFieldCriteriaLTCount, "LT count")) {
+        if (checkTFForPositiveInteger(textFieldCriteriaLTCount, "Число термов")) {
             int ltCount = Integer.parseInt(textFieldCriteriaLTCount.getText());
             if (checkBoxGenerateLT.isSelected()) {
                 criterias[index].setLts(LinguisticTerm.generateTermList(ltCount));
@@ -258,13 +259,13 @@ public class MainGUI extends JFrame {
     }
 
     private void saveLTProperties(int index, int ltIndex, int stage) {
-        if (!(checkTFForPositiveDouble(textFieldLTP1, "LT point 1") || checkTFForPositiveDouble(textFieldLTP2, "LT point 2") ||
-                checkTFForPositiveDouble(textFieldLTP3, "LT point 3"))) {
+        if (!(checkTFForPositiveDouble(textFieldLTP1, "Первая точка терма") || checkTFForPositiveDouble(textFieldLTP2, "Вторая точка терма") ||
+                checkTFForPositiveDouble(textFieldLTP3, "Третья точка терма"))) {
             return;
         }
         //boolean isTrapezoidal = criterias[index].getLts().get(ltIndex).getType() != LTType.TRIANGULAR;
         boolean isTrapezoidal = comboBoxLTType.getSelectedItem().equals(LTType.TRAPEZOIDAL);
-        if (isTrapezoidal && !checkTFForPositiveDouble(textFieldLTP4, "LT point 4")) {
+        if (isTrapezoidal && !checkTFForPositiveDouble(textFieldLTP4, "Червётрая точка терма")) {
             return;
         }
         double[] points;
@@ -276,7 +277,7 @@ public class MainGUI extends JFrame {
             points[3] = Double.parseDouble(textFieldLTP4.getText());
         }
         if ((points[0] > points[1] || points[1] > points[2]) || (isTrapezoidal && points[2] > points[3])) {
-            JOptionPane.showMessageDialog(null, "Wrong points values");
+            JOptionPane.showMessageDialog(null, "Ошибка в значении точек терма");
             return;
         }
 
@@ -292,7 +293,7 @@ public class MainGUI extends JFrame {
         standartTableInitialization(tableLTFull);
         standartTableInitialization(tableAggregation);
         standartTableInitialization(tableAlpha);
-        ((DefaultTableModel) tableConvolution.getModel()).setColumnIdentifiers(new String[]{"E", "I_op", "I_pes"});
+        ((DefaultTableModel) tableConvolution.getModel()).setColumnIdentifiers(new String[]{"E", "I опт", "I песс"});
         ((DefaultTableModel) tableConvolution.getModel()).setRowCount(alternativesCount);
         for (int i = 0; i < tableConvolution.getRowCount(); i++) {
             tableConvolution.setValueAt("E" + (i + 1), i, 0);
@@ -327,7 +328,7 @@ public class MainGUI extends JFrame {
 
     private void doNextOnSecondTab() {
         if (textFieldAlpha.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Input alpha.");
+            JOptionPane.showMessageDialog(null, "Введите значение альфа.");
             return;
         }
         try {
@@ -374,10 +375,10 @@ public class MainGUI extends JFrame {
                 }
             }
 
-            labelResult.setText("Optimistic winner: E" + winOptimistic +
-                    " \t\n Pessimistic winner: E" + winPessimistic);
+            labelOptResult.setText("Победитель по оптимистической свёртке: E" + winOptimistic);
+            labelPesResult.setText("Победитель по пессимистической свёртке: E" + winPessimistic);
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "Alpha is not a number!");
+            JOptionPane.showMessageDialog(null, "Значение альфа не является числом!");
             e.printStackTrace();
             return;
         }
@@ -453,16 +454,16 @@ public class MainGUI extends JFrame {
 
     private boolean checkTFForPositiveInteger(JTextField textField, String fieldDesc) {
         if (textField.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Fill '" + fieldDesc + "' field");
+            JOptionPane.showMessageDialog(null, "Заполните поле: '" + fieldDesc + "'");
             return false;
         }
         try {
             if (Integer.parseInt(textField.getText()) <= 0) {
-                JOptionPane.showMessageDialog(null, "Value in field '" + fieldDesc + "' must be > 0");
+                JOptionPane.showMessageDialog(null, "Значение в поле '" + fieldDesc + "' должно быть > 0");
                 return false;
             }
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "You typed non integer value in filed '" + fieldDesc + "'");
+            JOptionPane.showMessageDialog(null, "Вы ввели не целочисленное значение в поле: '" + fieldDesc + "'");
             return false;
         }
         return true;
@@ -470,13 +471,13 @@ public class MainGUI extends JFrame {
 
     private boolean checkTFForPositiveDouble(JTextField textField, String fieldDesc) {
         if (textField.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Fill '" + fieldDesc + "' field");
+            JOptionPane.showMessageDialog(null, "Заполните поле: '" + fieldDesc + "'");
             return false;
         }
         try {
             Double.parseDouble(textField.getText());
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "You typed non integer value in filed '" + fieldDesc + "'");
+            JOptionPane.showMessageDialog(null, "Вы ввели не числовое значение в поле: '" + fieldDesc + "'");
             return false;
         }
         return true;

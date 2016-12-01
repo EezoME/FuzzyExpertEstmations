@@ -88,7 +88,7 @@ public class Criteria {
             return resultLTs.substring(0, resultLTs.lastIndexOf(","));
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "ERR: Inputted value does not match specified LTs.");
+            JOptionPane.showMessageDialog(null, "ОШИБКА: введённое значение не совпадает с сохранёнными термами.");
             System.out.println(e.getMessage());
             e.printStackTrace();
             return "";

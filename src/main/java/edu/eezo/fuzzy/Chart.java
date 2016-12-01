@@ -26,7 +26,7 @@ public class Chart extends ApplicationFrame {
     public Chart(String applicationTitle, String chartTitle, java.util.List<LinguisticTerm> linguisticTerms) {
         super(applicationTitle);
         this.linguisticTerms = linguisticTerms;
-        JFreeChart xylineChart = ChartFactory.createXYLineChart(chartTitle, "Conventional Units", "Degree of Truth", createDataset(),
+        JFreeChart xylineChart = ChartFactory.createXYLineChart(chartTitle, "Условные единицы", "Функция принадлежности", createDataset(),
                 PlotOrientation.VERTICAL, true, true, false);
 
         ChartPanel chartPanel = new ChartPanel(xylineChart);
