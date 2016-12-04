@@ -144,6 +144,13 @@ public class Criteria {
         return "( " + points[0] + " ; " + points[1] + " ; " + points[2] + " ; " + points[3] + " )";
     }
 
+    /**
+     * Aggregates several aggregation expressions into one.
+     * Has output like <code>aggregateLTs</code>.
+     *
+     * @param aggrExp an array of aggregation expressions
+     * @return an aggregation expression
+     */
     public static String rowAggregation(String[] aggrExp) {
         if (aggrExp == null || aggrExp.length == 0) {
             return "( ; ; ; )";

@@ -192,7 +192,9 @@ public class MainGUI extends JFrame {
     }
 
     /**
-     * Stage 1.
+     * Stage 1.<br>
+     * Install <code>alternativesCount</code> and <code>criteriaCount</code> values.
+     * Creates new criteria instants.
      */
     private void acceptCounts() {
         if (SwingUtils.checkTFForPositiveInteger(textFieldAlternativesCount, "Alternatives Count") ||
@@ -220,7 +222,8 @@ public class MainGUI extends JFrame {
     }
 
     /**
-     * Stage 2.
+     * Stage 2.<br>
+     * Makes first pre-saving for criteria.
      */
     private void acceptLT() {
         if (stage < 1) return;
@@ -233,7 +236,8 @@ public class MainGUI extends JFrame {
     }
 
     /**
-     * Stage 3.
+     * Stage 3.<br>
+     * Save linguistic terms data.
      */
     private void saveLT() {
         if (stage < 2) return;
@@ -244,7 +248,9 @@ public class MainGUI extends JFrame {
     }
 
     /**
-     * Stage 4.
+     * Stage 4.<br>
+     * Saves whole criteria data.
+     * Also updates progress bar status.
      */
     private void saveCriteria() {
         if (stage < 3) return;
@@ -263,7 +269,8 @@ public class MainGUI extends JFrame {
     }
 
     /**
-     * Stage 5.
+     * Stage 5.<br>
+     * Check the decision table and makes linguistic terms unwrapped.
      */
     private void switchToSecondTab() {
         if (stage < 4) return;
@@ -306,7 +313,8 @@ public class MainGUI extends JFrame {
     }
 
     /**
-     * Stage 6.
+     * Stage 6.<br>
+     * Makes pessimistic, optimistic and aggregation way calculations.
      */
     private void doNextOnSecondTab() {
         if (stage < 5) return;
@@ -321,6 +329,12 @@ public class MainGUI extends JFrame {
 
     /* CRITERIA METHODS */
 
+    /**
+     * Shows criteria on the form.
+     *
+     * @param index index of criteria
+     * @param stage current stage
+     */
     private void showCriteria(int index, int stage) {
         if (stage == 1) return;
 
@@ -332,6 +346,13 @@ public class MainGUI extends JFrame {
         }
     }
 
+    /**
+     * Shows linguistic data on the form.
+     *
+     * @param index   index of criteria
+     * @param ltIndex index of linguistic term
+     * @param stage   current stage
+     */
     private void showLTProperties(int index, int ltIndex, int stage) {
         if (stage < 2) return;
 
@@ -355,6 +376,12 @@ public class MainGUI extends JFrame {
         }
     }
 
+    /**
+     * Saves criteria.
+     *
+     * @param index index of criteria
+     * @param stage current stage
+     */
     private void saveCriteria(int index, int stage) {
         if (stage != 1 && stage < 3) return;
 
@@ -381,6 +408,13 @@ public class MainGUI extends JFrame {
         }
     }
 
+    /**
+     * Saves linguistic terms data.
+     *
+     * @param index   index of criteria
+     * @param ltIndex index of linguistic term
+     * @param stage   current stage
+     */
     private void saveLTProperties(int index, int ltIndex, int stage) {
         if (stage < 2) return;
 
@@ -550,6 +584,12 @@ public class MainGUI extends JFrame {
     }
 
 
+    /**
+     * Initiates specified table with default identifiers ("E\Q", "Q1", "Q2", ..., "Qn")
+     * And default first column ("E1", "E2", ..., "En").
+     *
+     * @param table specified table
+     */
     private void standardTableInitialization(JTable table) {
         String[] identifiers = new String[criteriaCount + 1];
         identifiers[0] = "E\\Q";
@@ -565,6 +605,10 @@ public class MainGUI extends JFrame {
         }
     }
 
+    /**
+     * Updates progress bar status.
+     * Uses <code>criteriaChecked</code> as basis.
+     */
     private void updateProgressBar() {
         int checkedCount = 0;
 
@@ -578,6 +622,12 @@ public class MainGUI extends JFrame {
 
     /* TOGGLES */
 
+    /**
+     * Changes components enable status.
+     * Opens/closes components for stage 2.
+     *
+     * @param isEnable component enable status
+     */
     private void toggleCriteriaComponents(boolean isEnable) {
         comboBoxCriteria.setEnabled(isEnable);
         textFieldCriteriaName.setEnabled(isEnable);
@@ -586,6 +636,12 @@ public class MainGUI extends JFrame {
         buttonLTAccept.setEnabled(isEnable);
     }
 
+    /**
+     * Changes components enable status.
+     * Opens/closes components for stage 3.
+     *
+     * @param isEnable component enable status
+     */
     private void toggleLTComponents(boolean isEnable) {
         textFieldLTLongName.setEnabled(isEnable);
         textFieldLTShortName.setEnabled(isEnable);
@@ -601,16 +657,34 @@ public class MainGUI extends JFrame {
         buttonSaveCriteria.setEnabled(isEnable);
     }
 
+    /**
+     * Changes components enable status.
+     * Opens/closes components for stage 4.
+     *
+     * @param isEnable component enable status
+     */
     private void toggleDecisionMatrixComponents(boolean isEnable) {
         tableDecisionMatrixInitial.setEnabled(isEnable);
         buttonNextTab.setEnabled(isEnable);
     }
 
+    /**
+     * Changes components enable status.
+     * Opens/closes components for stage 5.
+     *
+     * @param isEnable component enable status
+     */
     private void toggleSecondTabComponents(boolean isEnable) {
         textFieldAlpha.setEnabled(isEnable);
         buttonDoAlpha.setEnabled(isEnable);
     }
 
+    /**
+     * Changes components enable status.
+     * Opens/closes tables on tab 2.
+     *
+     * @param isEnable component enable status
+     */
     private void togglePermanentSecondTabComponents(boolean isEnable) {
         tableLT.setEnabled(isEnable);
         tableLTFull.setEnabled(isEnable);

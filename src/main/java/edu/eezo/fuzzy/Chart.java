@@ -31,8 +31,10 @@ public class Chart extends ApplicationFrame {
 
         ChartPanel chartPanel = new ChartPanel(xylineChart);
         chartPanel.setPreferredSize(new Dimension(560, 367));
+
         XYPlot plot = xylineChart.getXYPlot();
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+
         renderer.setStroke(new BasicStroke(2.0f));
         plot.setRenderer(renderer);
         setContentPane(chartPanel);
