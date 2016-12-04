@@ -47,7 +47,7 @@ public class Criteria {
         }
 
         if (longName != null) this.lts.get(ltIndex).setName(longName);
-        if (shortName != null) this.lts.get(ltIndex).setShortName(shortName);
+        if (shortName != null) this.lts.get(ltIndex).setShortName(shortName.toUpperCase());
         if (type != null) this.lts.get(ltIndex).setType(type);
         if (points != null) this.lts.get(ltIndex).setPoints(points);
 
@@ -65,6 +65,8 @@ public class Criteria {
         if (lts == null || lts.isEmpty()) {
             return "";
         }
+
+        lts = lts.toUpperCase(); // to allow "l,m,h" instead of only "L,M,H"
 
         try {
             String[] localLTs = getLocalLTs();
@@ -112,6 +114,8 @@ public class Criteria {
             return "( ; ; ; )";
         }
 
+        lts = lts.toUpperCase(); // to allow "l,m,h" instead of only "L,M,H"
+
         // "L" | "L,M,H"
         String[] separatedLTs = lts.split(",| ");
         double[][] allLTsPoints = new double[separatedLTs.length][4];
@@ -138,6 +142,29 @@ public class Criteria {
         }
 
         return "( " + points[0] + " ; " + points[1] + " ; " + points[2] + " ; " + points[3] + " )";
+    }
+
+    public static String rowAggregation(String[] aggrExp) {
+        if (aggrExp == null || aggrExp.length == 0) {
+            return "( ; ; ; )";
+        }
+
+        double[] resultNumbers = new double[4];
+        resultNumbers[0] = Double.MAX_VALUE;
+        resultNumbers[1] = Double.MAX_VALUE;
+        resultNumbers[2] = -Double.MAX_VALUE;
+        resultNumbers[3] = -Double.MAX_VALUE;
+
+        for (int i = 0; i < aggrExp.length; i++) {
+            double[] nums = splitAggregationExpression(aggrExp[i]);
+
+            if (resultNumbers[0] > nums[0]) resultNumbers[0] = nums[0];
+            if (resultNumbers[1] > nums[1]) resultNumbers[1] = nums[1];
+            if (resultNumbers[2] < nums[2]) resultNumbers[2] = nums[2];
+            if (resultNumbers[3] < nums[3]) resultNumbers[3] = nums[3];
+        }
+
+        return "( " + resultNumbers[0] + " ; " + resultNumbers[1] + " ; " + resultNumbers[2] + " ; " + resultNumbers[3] + " )";
     }
 
     /**

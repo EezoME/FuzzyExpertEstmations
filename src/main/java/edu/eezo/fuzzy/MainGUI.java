@@ -64,26 +64,23 @@ public class MainGUI extends JFrame {
      * 1 - counts entered, criteria list initialized <br>
      * 2 - criteria's name and LT count entered, LT list initialized <br>
      * 3 - all LT data entered correctly <br>
-     * 4 - saved stage 3 <br>
+     * 4 - saved stage 3 (criteria saved)<br>
+     * 5 - second tab before alpha input<br>
+     * 6 - second tab after alpha input<br>
      */
     private static int stage = 0;
 
 
     public MainGUI() {
         super("Fuzzy Expert Estimations");
-        setSize(840, 540);
+        setSize(910, 610);
         setLocationRelativeTo(null);
         setContentPane(rootPanel);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setVisible(true);
+
         comboBoxLTType.addItem(LTType.TRAPEZOIDAL);
         comboBoxLTType.addItem(LTType.TRIANGULAR);
-        tableDecisionMatrixInitial.setDragEnabled(false);
-        tableLT.setEnabled(false);
-        tableLTFull.setEnabled(false);
-        tableAggregation.setEnabled(false);
-        tableAlpha.setEnabled(false);
-        tableConvolution.setEnabled(false);
 
 
         /* Disable until count entered */
@@ -94,65 +91,48 @@ public class MainGUI extends JFrame {
         toggleDecisionMatrixComponents(false);
         /* Disable until decision matrix accepted */
         toggleSecondTabComponents(false);
+        /* Always disable */
+        togglePermanentSecondTabComponents(false);
 
         buttonAcceptCounts.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (checkTFForPositiveInteger(textFieldAlternativesCount, "Alternatives Count") ||
-                        checkTFForPositiveInteger(textFieldCriteriaCount, "Criteria Count")) {
-                    alternativesCount = Integer.parseInt(textFieldAlternativesCount.getText());
-                    criteriaCount = Integer.parseInt(textFieldCriteriaCount.getText());
-                    toggleCriteriaComponents(true);
-                    criterias = new Criteria[criteriaCount];
-
-                    comboBoxCriteria.removeAllItems();
-
-                    for (int i = 0; i < criteriaCount; i++) {
-                        criterias[i] = new Criteria(i + 1);
-                        comboBoxCriteria.addItem(criterias[i]);
-                    }
-
-                    criteriaChecked = new boolean[criteriaCount];
-                    Arrays.fill(criteriaChecked, false);
-                    progressBarDone.setMinimum(0);
-                    progressBarDone.setMaximum(criteriaCount);
-
-                    stage = 1;
-                }
+                acceptCounts();
             }
         });
 
         buttonLTAccept.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                stage = 2;
-                saveCriteria(comboBoxCriteria.getSelectedIndex(), stage);
-                toggleLTComponents(true);
+                acceptLT();
             }
         });
 
         buttonSaveLT.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                stage = 3;
-                saveLTProperties(comboBoxCriteria.getSelectedIndex(), Integer.parseInt(labelLTNo.getText()), stage);
+                saveLT();
             }
         });
 
         buttonSaveCriteria.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (stage < 2) return;
-                stage = 4;
-                saveCriteria(comboBoxCriteria.getSelectedIndex(), stage);
-                criteriaChecked[comboBoxCriteria.getSelectedIndex()] = true;
-                updateProgressBar();
+                saveCriteria();
+            }
+        });
 
-                if (progressBarDone.getValue() == progressBarDone.getMaximum()) {
-                    toggleDecisionMatrixComponents(true);
+        buttonNextTab.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                switchToSecondTab();
+            }
+        });
 
-                    standardTableInitialization(tableDecisionMatrixInitial);
-                }
+        buttonDoAlpha.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                doNextOnSecondTab();
             }
         });
 
@@ -209,20 +189,134 @@ public class MainGUI extends JFrame {
                             criterias[comboBoxCriteria.getSelectedIndex()].getLts());
             }
         });
+    }
 
-        buttonNextTab.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                switchToSecondTab();
-            }
-        });
+    /**
+     * Stage 1.
+     */
+    private void acceptCounts() {
+        if (SwingUtils.checkTFForPositiveInteger(textFieldAlternativesCount, "Alternatives Count") ||
+                SwingUtils.checkTFForPositiveInteger(textFieldCriteriaCount, "Criteria Count")) {
+            alternativesCount = Integer.parseInt(textFieldAlternativesCount.getText());
+            criteriaCount = Integer.parseInt(textFieldCriteriaCount.getText());
+            criterias = new Criteria[criteriaCount];
 
-        buttonDoAlpha.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                doNextOnSecondTab();
+            toggleCriteriaComponents(true);
+
+            comboBoxCriteria.removeAllItems();
+
+            for (int i = 0; i < criteriaCount; i++) {
+                criterias[i] = new Criteria(i + 1);
+                comboBoxCriteria.addItem(criterias[i]);
             }
-        });
+
+            criteriaChecked = new boolean[criteriaCount];
+            Arrays.fill(criteriaChecked, false);
+            progressBarDone.setMinimum(0);
+            progressBarDone.setMaximum(criteriaCount);
+
+            stage = 1;
+        }
+    }
+
+    /**
+     * Stage 2.
+     */
+    private void acceptLT() {
+        if (stage < 1) return;
+
+        saveCriteria(comboBoxCriteria.getSelectedIndex(), stage);
+
+        toggleLTComponents(true);
+
+        stage = 2;
+    }
+
+    /**
+     * Stage 3.
+     */
+    private void saveLT() {
+        if (stage < 2) return;
+
+        saveLTProperties(comboBoxCriteria.getSelectedIndex(), Integer.parseInt(labelLTNo.getText()), stage);
+
+        stage = 3;
+    }
+
+    /**
+     * Stage 4.
+     */
+    private void saveCriteria() {
+        if (stage < 3) return;
+
+        saveCriteria(comboBoxCriteria.getSelectedIndex(), stage);
+        criteriaChecked[comboBoxCriteria.getSelectedIndex()] = true;
+        updateProgressBar();
+
+        if (progressBarDone.getValue() == progressBarDone.getMaximum()) {
+            toggleDecisionMatrixComponents(true);
+
+            standardTableInitialization(tableDecisionMatrixInitial);
+        }
+
+        stage = 4;
+    }
+
+    /**
+     * Stage 5.
+     */
+    private void switchToSecondTab() {
+        if (stage < 4) return;
+
+        if (!SwingUtils.checkTableForNonEmpty(tableDecisionMatrixInitial)) {
+            JOptionPane.showMessageDialog(null, "Fill decision matrix.");
+            return;
+        }
+
+        toggleSecondTabComponents(true);
+
+        standardTableInitialization(tableLT);
+        standardTableInitialization(tableLTFull);
+        standardTableInitialization(tableAggregation);
+        standardTableInitialization(tableAlpha);
+
+        SwingUtils.jTableInitiation(tableAggregationSecondWay, new String[]{"E\\Q", "Q"}, alternativesCount);
+        SwingUtils.jTableInitiation(tableAlphaSecondWay, new String[]{"E\\Q", "Q"}, alternativesCount);
+        SwingUtils.jTableInitiation(tableConvolution, new String[]{"E", "I_op", "I_pes", "I_agg"}, alternativesCount);
+
+        tabbedPane1.setSelectedIndex(1);
+
+        // copy Decision table from tab 1 to LT table on tab 2
+        for (int i = 0; i < tableDecisionMatrixInitial.getRowCount(); i++) {
+            for (int j = 1; j < tableDecisionMatrixInitial.getColumnCount(); j++) {
+                tableLT.setValueAt(tableDecisionMatrixInitial.getValueAt(i, j), i, j);
+            }
+        }
+
+        // Intermediate LT
+        for (int i = 0; i < tableLT.getRowCount(); i++) {
+            for (int j = 1; j < tableLT.getColumnCount(); j++) {
+                tableLTFull.setValueAt(
+                        criterias[j - 1].getLTWithIntermediateValues(tableLT.getValueAt(i, j).toString()),
+                        i, j);
+            }
+        }
+
+        stage = 5;
+    }
+
+    /**
+     * Stage 6.
+     */
+    private void doNextOnSecondTab() {
+        if (stage < 5) return;
+
+        if (!SwingUtils.checkTFForDouble(textFieldAlpha, "Alpha value")) return;
+
+        pessimisticAndOptimistic();
+        aggregational();
+
+        stage = 6;
     }
 
     /* CRITERIA METHODS */
@@ -262,11 +356,11 @@ public class MainGUI extends JFrame {
     }
 
     private void saveCriteria(int index, int stage) {
-        if (stage < 1) return;
+        if (stage != 1 && stage < 3) return;
 
         criterias[index].setName(textFieldCriteriaName.getText());
 
-        if (checkTFForPositiveInteger(textFieldCriteriaLTCount, "LT count")) {
+        if (SwingUtils.checkTFForPositiveInteger(textFieldCriteriaLTCount, "LT count")) {
             int ltCount = Integer.parseInt(textFieldCriteriaLTCount.getText());
 
             if (checkBoxGenerateLT.isSelected()) {
@@ -279,9 +373,7 @@ public class MainGUI extends JFrame {
                 }
             }
 
-            labelLTNo.setText("0");
-
-            if (stage == 2) return;
+//            labelLTNo.setText("0");
 
             if (!checkBoxGenerateLT.isSelected()) {
                 saveLTProperties(index, 0, stage);
@@ -290,14 +382,16 @@ public class MainGUI extends JFrame {
     }
 
     private void saveLTProperties(int index, int ltIndex, int stage) {
-        if (!(checkTFForPositiveDouble(textFieldLTP1, "LT point 1") || checkTFForPositiveDouble(textFieldLTP2, "LT point 2") ||
-                checkTFForPositiveDouble(textFieldLTP3, "LT point 3"))) {
+        if (stage < 2) return;
+
+        if (!(SwingUtils.checkTFForDouble(textFieldLTP1, "LT point 1") || SwingUtils.checkTFForDouble(textFieldLTP2, "LT point 2") ||
+                SwingUtils.checkTFForDouble(textFieldLTP3, "LT point 3"))) {
             return;
         }
 
         //boolean isTrapezoidal = criterias[index].getLts().get(ltIndex).getType() != LTType.TRIANGULAR;
         boolean isTrapezoidal = comboBoxLTType.getSelectedItem().equals(LTType.TRAPEZOIDAL);
-        if (isTrapezoidal && !checkTFForPositiveDouble(textFieldLTP4, "LT point 4")) {
+        if (isTrapezoidal && !SwingUtils.checkTFForDouble(textFieldLTP4, "LT point 4")) {
             return;
         }
 
@@ -320,51 +414,8 @@ public class MainGUI extends JFrame {
                 (LTType) comboBoxLTType.getSelectedItem(), points);
     }
 
+
     /* SECOND TAB METHODS */
-
-    private void switchToSecondTab() {
-        toggleSecondTabComponents(true);
-
-        standardTableInitialization(tableLT);
-        standardTableInitialization(tableLTFull);
-        standardTableInitialization(tableAggregation);
-        standardTableInitialization(tableAlpha);
-
-        ((DefaultTableModel) tableConvolution.getModel()).setColumnIdentifiers(new String[]{"E", "I_op", "I_pes", "I_agg"});
-        ((DefaultTableModel) tableConvolution.getModel()).setRowCount(alternativesCount);
-
-        for (int i = 0; i < tableConvolution.getRowCount(); i++) {
-            tableConvolution.setValueAt("E" + (i + 1), i, 0);
-        }
-
-        tabbedPane1.setSelectedIndex(1);
-
-        // copy Decision table from tab 1 to LT table on tab 2
-        for (int i = 0; i < tableDecisionMatrixInitial.getRowCount(); i++) {
-            for (int j = 1; j < tableDecisionMatrixInitial.getColumnCount(); j++) {
-                tableLT.setValueAt(tableDecisionMatrixInitial.getValueAt(i, j), i, j);
-            }
-        }
-
-        // Intermediate LT
-        for (int i = 0; i < tableLT.getRowCount(); i++) {
-            for (int j = 1; j < tableLT.getColumnCount(); j++) {
-                tableLTFull.setValueAt(
-                        criterias[j - 1].getLTWithIntermediateValues(tableLT.getValueAt(i, j).toString()),
-                        i, j);
-            }
-        }
-
-    }
-
-    private void doNextOnSecondTab() {
-        if (textFieldAlpha.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Input alpha.");
-            return;
-        }
-
-        pessimisticAndOptimistic();
-    }
 
     private void pessimisticAndOptimistic() {
         long startTime = System.currentTimeMillis();
@@ -378,21 +429,14 @@ public class MainGUI extends JFrame {
             }
         }
 
-        try {
-            // alpha
-            double alpha = Double.parseDouble(textFieldAlpha.getText());
+        double alpha = Double.parseDouble(textFieldAlpha.getText());
 
-            for (int i = 0; i < tableAggregation.getRowCount(); i++) {
-                for (int j = 1; j < tableAggregation.getColumnCount(); j++) {
-                    tableAlpha.setValueAt(
-                            Criteria.alphaCut(tableAggregation.getValueAt(i, j).toString(), alpha),
-                            i, j);
-                }
+        for (int i = 0; i < tableAggregation.getRowCount(); i++) {
+            for (int j = 1; j < tableAggregation.getColumnCount(); j++) {
+                tableAlpha.setValueAt(
+                        Criteria.alphaCut(tableAggregation.getValueAt(i, j).toString(), alpha),
+                        i, j);
             }
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "Alpha is not a number!");
-            e.printStackTrace();
-            return;
         }
 
         // convolution
@@ -435,12 +479,13 @@ public class MainGUI extends JFrame {
 
         long duration = System.currentTimeMillis() - startTime;
 
-        labelOptimisticResult.setText("Optimistic winner: E" + winOptimistic + " (duration: " + duration + ")");
-        labelPessimisticResult.setText("Pessimistic winner: E" + winPessimistic + " (duration: " + duration + ")");
+        labelOptimisticResult.setText("Optimistic winner: E" + winOptimistic + " (duration: " + duration + " ms)");
+        labelPessimisticResult.setText("Pessimistic winner: E" + winPessimistic + " (duration: " + duration + " ms)");
     }
 
-    private void aggregational(){
+    private void aggregational() {
         long startTime = System.currentTimeMillis();
+
         // AGGREGATION
         for (int i = 0; i < tableLTFull.getRowCount(); i++) {
             for (int j = 1; j < tableLTFull.getColumnCount(); j++) {
@@ -450,64 +495,49 @@ public class MainGUI extends JFrame {
             }
         }
 
-        try {
-            // alpha
-            double alpha = Double.parseDouble(textFieldAlpha.getText());
+        for (int i = 0; i < tableAggregationSecondWay.getRowCount(); i++) {
+            String[] aggExpr = new String[tableAggregation.getColumnCount() - 1];
 
-            for (int i = 0; i < tableAggregation.getRowCount(); i++) {
-                for (int j = 1; j < tableAggregation.getColumnCount(); j++) {
-                    tableAlpha.setValueAt(
-                            Criteria.alphaCut(tableAggregation.getValueAt(i, j).toString(), alpha),
-                            i, j);
-                }
+            for (int j = 1; j < tableAggregation.getColumnCount(); j++) {
+                aggExpr[j - 1] = tableAggregation.getValueAt(i, j).toString();
             }
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "Alpha is not a number!");
-            e.printStackTrace();
-            return;
+
+            tableAggregationSecondWay.setValueAt(Criteria.rowAggregation(aggExpr), i, 1);
+        }
+
+        double alpha = Double.parseDouble(textFieldAlpha.getText());
+
+        for (int i = 0; i < tableAggregationSecondWay.getRowCount(); i++) {
+            tableAlphaSecondWay.setValueAt(
+                    Criteria.alphaCut(tableAggregationSecondWay.getValueAt(i, 1).toString(), alpha),
+                    i, 1);
         }
 
         // convolution
-        double[][] convolutionOptimisticResults = new double[tableAlpha.getRowCount()][2];
-        double[][] convolutionPessimisticResults = new double[tableAlpha.getRowCount()][2];
+        double[][] convolutionAggregationWayResults = new double[tableAlphaSecondWay.getRowCount()][2];
 
-        for (int i = 0; i < tableAlpha.getRowCount(); i++) {
-            String[] aggrExps = new String[tableAlpha.getColumnCount() - 1];
+        for (int i = 0; i < tableAlphaSecondWay.getRowCount(); i++) {
+            String aggrExps = tableAlphaSecondWay.getValueAt(i, 1).toString();
 
-            for (int j = 1; j < tableAlpha.getColumnCount(); j++) {
-                aggrExps[j - 1] = tableAlpha.getValueAt(i, j).toString();
-            }
-
-            convolutionOptimisticResults[i] = Criteria.optimisticConvolution(aggrExps);
+            convolutionAggregationWayResults[i] = Criteria.optimisticConvolution(new String[]{aggrExps});
             tableConvolution.setValueAt(
-                    "[ " + convolutionOptimisticResults[i][0] + " ; " + convolutionOptimisticResults[i][1] + " ]",
-                    i, 1);
-
-            convolutionPessimisticResults[i] = Criteria.pessimisticConvolution(aggrExps);
-            tableConvolution.setValueAt(
-                    "[ " + convolutionPessimisticResults[i][0] + " ; " + convolutionPessimisticResults[i][1] + " ]",
-                    i, 2);
+                    "[ " + convolutionAggregationWayResults[i][0] + " ; " + convolutionAggregationWayResults[i][1] + " ]",
+                    i, 3);
         }
 
         // results
-        int winOptimistic = -1;
-        int winPessimistic = -1;
-        double pOpt = Integer.MIN_VALUE;
-        double pPes = Integer.MIN_VALUE;
+        int win = -1;
+        double pAgr = Integer.MIN_VALUE;
 
-        for (int i = 0; i < convolutionOptimisticResults.length; i++) {
-            if (pOpt < Math.max(1.0 - Math.max(1.0 - convolutionOptimisticResults[i][0], 0.0), 0.0)) {
-                winOptimistic = i + 1;
-            }
-
-            if (pPes < Math.max(1.0 - Math.max(1.0 - convolutionOptimisticResults[i][0], 0.0), 0.0)) {
-                winPessimistic = i + 1;
+        for (int i = 0; i < convolutionAggregationWayResults.length; i++) {
+            if (pAgr < Math.max(1.0 - Math.max(1.0 - convolutionAggregationWayResults[i][0], 0.0), 0.0)) {
+                win = i + 1;
             }
         }
 
         long duration = System.currentTimeMillis() - startTime;
 
-        labelAggregationResult.setText("Aggregation winner: E");
+        labelAggregationResult.setText("Aggregation winner: E" + win + " (duration: " + duration + " ms)");
     }
 
     public static void main(String[] args) {
@@ -519,6 +549,7 @@ public class MainGUI extends JFrame {
         });
     }
 
+
     private void standardTableInitialization(JTable table) {
         String[] identifiers = new String[criteriaCount + 1];
         identifiers[0] = "E\\Q";
@@ -527,12 +558,10 @@ public class MainGUI extends JFrame {
             identifiers[i] = criterias[i - 1].toString();
         }
 
-        DefaultTableModel model = (DefaultTableModel) table.getModel();
-        model.setColumnIdentifiers(identifiers);
-        model.setRowCount(alternativesCount);
+        SwingUtils.jTableInitiation(table, identifiers, alternativesCount);
 
         for (int i = 0; i < alternativesCount; i++) {
-            model.setValueAt("E" + (i + 1), i, 0);
+            table.setValueAt("E" + (i + 1), i, 0);
         }
     }
 
@@ -553,6 +582,7 @@ public class MainGUI extends JFrame {
         comboBoxCriteria.setEnabled(isEnable);
         textFieldCriteriaName.setEnabled(isEnable);
         textFieldCriteriaLTCount.setEnabled(isEnable);
+        checkBoxGenerateLT.setEnabled(isEnable);
         buttonLTAccept.setEnabled(isEnable);
     }
 
@@ -568,6 +598,7 @@ public class MainGUI extends JFrame {
         buttonNextLT.setEnabled(isEnable);
         buttonSaveLT.setEnabled(isEnable);
         buttonCriteriaGraph.setEnabled(isEnable);
+        buttonSaveCriteria.setEnabled(isEnable);
     }
 
     private void toggleDecisionMatrixComponents(boolean isEnable) {
@@ -578,5 +609,15 @@ public class MainGUI extends JFrame {
     private void toggleSecondTabComponents(boolean isEnable) {
         textFieldAlpha.setEnabled(isEnable);
         buttonDoAlpha.setEnabled(isEnable);
+    }
+
+    private void togglePermanentSecondTabComponents(boolean isEnable) {
+        tableLT.setEnabled(isEnable);
+        tableLTFull.setEnabled(isEnable);
+        tableAggregation.setEnabled(isEnable);
+        tableAggregationSecondWay.setEnabled(isEnable);
+        tableAlpha.setEnabled(isEnable);
+        tableAlphaSecondWay.setEnabled(isEnable);
+        tableConvolution.setEnabled(isEnable);
     }
 }

@@ -13,9 +13,21 @@ public class SwingUtils {
         model.setColumnIdentifiers(columnIdentifiers);
         model.setRowCount(rowCount);
 
-        for (int i = 0; i < rowCount; i++) {
-            model.setValueAt("E" + (i + 1), i, 0);
+        for (int i = 0; i < table.getRowCount(); i++) {
+            table.setValueAt("E" + (i + 1), i, 0);
         }
+    }
+
+    public static boolean checkTableForNonEmpty(JTable table){
+        for (int i = 0; i < table.getRowCount(); i++) {
+            for (int j = 0; j < table.getColumnCount(); j++) {
+                if (table.getValueAt(i, j) == null || table.getValueAt(i, j).toString().isEmpty()){
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
 
@@ -63,6 +75,7 @@ public class SwingUtils {
             JOptionPane.showMessageDialog(null, "You typed non double value in filed '" + fieldDesc + "'");
             return false;
         }
+
         return true;
     }
 }
