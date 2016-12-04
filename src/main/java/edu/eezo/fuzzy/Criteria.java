@@ -8,16 +8,19 @@ import java.util.List;
  * Created by Eezo on 26.11.2016.
  */
 public class Criteria {
+
     /**
      * Short name.
      * Usually, contains one letter and one number (f.e.: "Q1").
      */
     private String mark;
+
     /**
      * A description of the criteria.
      * Usually, one word or combination of words.
      */
     private String name;
+
     /**
      * A list of linguistic terms.
      */
@@ -112,6 +115,7 @@ public class Criteria {
         // "L" | "L,M,H"
         String[] separatedLTs = lts.split(",| ");
         double[][] allLTsPoints = new double[separatedLTs.length][4];
+
         for (int i = 0; i < separatedLTs.length; i++) {
             for (int j = 0; j < this.lts.size(); j++) {
                 if (this.lts.get(j).getShortName().equals(separatedLTs[i])) {
@@ -125,6 +129,7 @@ public class Criteria {
         points[1] = Double.MAX_VALUE;
         points[2] = -Double.MAX_VALUE;
         points[3] = -Double.MAX_VALUE;
+
         for (int i = 0; i < allLTsPoints.length; i++) {
             if (points[0] > allLTsPoints[i][0]) points[0] = allLTsPoints[i][0];
             if (points[1] > allLTsPoints[i][1]) points[1] = allLTsPoints[i][1];
@@ -148,6 +153,7 @@ public class Criteria {
         if (aggregationExpression == null || aggregationExpression.isEmpty()) {
             return "";
         }
+
         if (alpha < 0 || alpha > 1) {
             System.out.println("WARN: alpha value is out of range.");
             return "";
@@ -181,6 +187,7 @@ public class Criteria {
 
         double maxLeft = -Double.MAX_VALUE;
         double maxRight = -Double.MAX_VALUE;
+
         for (int i = 0; i < numbers.length; i++) {
             if (numbers[i][0] > maxLeft) maxLeft = numbers[i][0];
             if (numbers[i][1] > maxRight) maxRight = numbers[i][1];
@@ -208,6 +215,7 @@ public class Criteria {
 
         double minLeft = Double.MAX_VALUE;
         double minRight = Double.MAX_VALUE;
+
         for (int i = 0; i < numbers.length; i++) {
             if (numbers[i][0] < minLeft) minLeft = numbers[i][0];
             if (numbers[i][1] < minRight) minRight = numbers[i][1];
@@ -232,20 +240,23 @@ public class Criteria {
         // "( 0.0 ; 0.5 ; 0.5 ; 1.0 )"
         String[] separateNumbers = aggregationExpression.split(";| |\\(|\\)|\\[|\\]");
         int count = 0;
+
         for (int i = 0; i < separateNumbers.length; i++) {
             if (!separateNumbers[i].equals("")) count++;
         }
+
         String[] nonEmptyNumbers = new String[count];
         count = 0;
+
         for (int i = 0; i < separateNumbers.length; i++) {
             if (!separateNumbers[i].equals("")) {
                 nonEmptyNumbers[count] = separateNumbers[i];
                 count++;
             }
         }
-        //System.out.println(Arrays.toString(nonEmptyNumbers));
 
         double[] numbers = new double[nonEmptyNumbers.length];
+
         for (int i = 0; i < numbers.length; i++) {
             numbers[i] = Double.parseDouble(nonEmptyNumbers[i]);
         }
@@ -260,9 +271,11 @@ public class Criteria {
      */
     private String[] getLocalLTs() {
         String[] local = new String[lts.size()];
+
         for (int i = 0; i < local.length; i++) {
             local[i] = lts.get(i).getShortName();
         }
+
         return local;
     }
 
