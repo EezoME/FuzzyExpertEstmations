@@ -14,6 +14,7 @@ import org.jfree.ui.RefineryUtilities;
 
 import java.awt.*;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 
 
 /**
@@ -21,12 +22,16 @@ import java.awt.event.WindowEvent;
  * Created by Eezo on 27.11.2016.
  */
 public class Chart extends ApplicationFrame {
-    java.util.List<LinguisticTerm> linguisticTerms;
+    private java.util.List<LinguisticTerm> linguisticTerms;
 
-    public Chart(String applicationTitle, String chartTitle, java.util.List<LinguisticTerm> linguisticTerms) {
+    public Chart(String applicationTitle, String chartTitle, java.util.List<LinguisticTerm> linguisticTerms, boolean isNormalize) {
         super(applicationTitle);
-        this.linguisticTerms = linguisticTerms;
-        JFreeChart xylineChart = ChartFactory.createXYLineChart(chartTitle, "Условные единицы", "Функция принадлежности", createDataset(),
+        this.linguisticTerms = new ArrayList<>();
+        for (int i = 0; i < linguisticTerms.size(); i++) {
+            this.linguisticTerms.add(linguisticTerms.get(i).makeClone());
+        }
+
+        JFreeChart xylineChart = ChartFactory.createXYLineChart(chartTitle, "Условные единицы", "Функция принадлежности", createDataset(isNormalize),
                 PlotOrientation.VERTICAL, true, true, false);
 
         ChartPanel chartPanel = new ChartPanel(xylineChart);
@@ -43,15 +48,17 @@ public class Chart extends ApplicationFrame {
      *
      * @return data set
      */
-    private XYDataset createDataset() {
+    private XYDataset createDataset(boolean isNormalize) {
         final XYSeriesCollection dataset = new XYSeriesCollection();
 
+        if (!isNormalize) {
+            linguisticTerms = LinguisticTerm.normalizeData(linguisticTerms);
+        }
         for (int i = 0; i < linguisticTerms.size(); i++) {
             XYSeries series = new XYSeries(linguisticTerms.get(i).getShortName());
+
+
             double[] points = linguisticTerms.get(i).getPoints();
-
-            points = normalizeData(points);
-
             if (points.length == 3) {
                 series.add(points[0], 0.0);
                 series.add(points[1], 1.0);
@@ -66,30 +73,8 @@ public class Chart extends ApplicationFrame {
             dataset.addSeries(series);
         }
 
+
         return dataset;
-    }
-
-    private double[] normalizeData(double[] points) {
-        double min = Double.MAX_VALUE;
-        double max = -Double.MAX_VALUE;
-
-        for (int i = 0; i < points.length; i++) {
-            if (min > points[i]) min = points[i];
-            if (max < points[i]) max = points[i];
-        }
-
-        double[] result = new double[points.length];
-
-        for (int i = 0; i < result.length; i++) {
-            if (Double.compare(points[i], 0.0d) == 0) {
-                result[i] = 0.0d;
-                continue;
-            }
-
-            result[i] = (points[i] - min) / (max - min);
-        }
-
-        return result;
     }
 
     // ! Need to override this to avoid main window closing.
@@ -101,9 +86,16 @@ public class Chart extends ApplicationFrame {
     }
 
     public static void main(String criteriaMark, String criteriaName, java.util.List<LinguisticTerm> linguisticTerms) {
-        Chart chart = new Chart(criteriaMark, criteriaName, linguisticTerms);
+        Chart chart = new Chart(criteriaMark + " (в обычном виде)", criteriaName, linguisticTerms, true);
         chart.pack();
         RefineryUtilities.centerFrameOnScreen(chart);
+        chart.setLocation(chart.getX() - 288, chart.getY());
         chart.setVisible(true);
+
+        Chart chart2 = new Chart(criteriaMark + " (нормализованные значения)", criteriaName, linguisticTerms, false);
+        chart2.pack();
+        RefineryUtilities.centerFrameOnScreen(chart2);
+        chart2.setLocation(chart2.getX() + 288, chart2.getY());
+        chart2.setVisible(true);
     }
 }

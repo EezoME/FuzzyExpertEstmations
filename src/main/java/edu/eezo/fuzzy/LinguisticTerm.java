@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Created by Eezo on 26.11.2016.
  */
-public class LinguisticTerm {
+public class LinguisticTerm implements Cloneable {
     private String name;
     private String shortName;
     private LTType type;
@@ -158,6 +158,28 @@ public class LinguisticTerm {
         return list;
     }
 
+    public static java.util.List<LinguisticTerm> normalizeData(java.util.List<LinguisticTerm> terms) {
+        double max = -Double.MAX_VALUE;
+
+        for (int i = 0; i < terms.size(); i++) {
+            for (int j = 0; j < terms.get(i).getPoints().length; j++) {
+                if (max < terms.get(i).getPoints()[j]) {
+                    max = terms.get(i).getPoints()[j];
+                }
+            }
+        }
+
+        double coeff = 1 / max;
+
+        for (int i = 0; i < terms.size(); i++) {
+            for (int j = 0; j < terms.get(i).getPoints().length; j++) {
+                terms.get(i).getPoints()[j] *= coeff;
+            }
+        }
+
+        return terms;
+    }
+
     public String getName() {
         return name;
     }
@@ -190,4 +212,7 @@ public class LinguisticTerm {
         this.points = points;
     }
 
+    protected LinguisticTerm makeClone() {
+        return new LinguisticTerm(this.name, this.shortName, this.type, this.points.clone());
+    }
 }

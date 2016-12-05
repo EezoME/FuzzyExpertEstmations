@@ -293,6 +293,10 @@ public class MainGUI extends JFrame {
     /* SECOND TAB METHODS */
 
     private void switchToSecondTab() {
+        for (int i = 0; i < criterias.length; i++) {
+            LinguisticTerm.normalizeData(criterias[i].getLts());
+        }
+
         toggleSecondTabComponents(true);
         standartTableInitialization(tableLT);
         standartTableInitialization(tableLTFull);
