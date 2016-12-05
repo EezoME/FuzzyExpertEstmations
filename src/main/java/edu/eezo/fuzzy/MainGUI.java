@@ -5,6 +5,8 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -52,6 +54,7 @@ public class MainGUI extends JFrame {
     private JLabel labelAggregationResult;
     private JTable tableAggregationSecondWay;
     private JTable tableAlphaSecondWay;
+    private JButton buttonNextCriteria;
 
     private int alternativesCount;
     private int criteriaCount;
@@ -189,6 +192,57 @@ public class MainGUI extends JFrame {
                             criterias[comboBoxCriteria.getSelectedIndex()].getLts());
             }
         });
+
+        buttonNextCriteria.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int nextIndex = comboBoxCriteria.getSelectedIndex() + 1;
+                if (nextIndex >= criterias.length) nextIndex = 0;
+                comboBoxCriteria.setSelectedIndex(nextIndex);
+            }
+        });
+
+        textFieldLTP1.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                checkBoxGenerateLT.setSelected(false);
+            }
+        });
+
+        textFieldLTP2.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                checkBoxGenerateLT.setSelected(false);
+            }
+        });
+
+        textFieldLTP3.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                checkBoxGenerateLT.setSelected(false);
+            }
+        });
+
+        textFieldLTP4.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                checkBoxGenerateLT.setSelected(false);
+            }
+        });
+
+        textFieldLTLongName.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                checkBoxGenerateLT.setSelected(false);
+            }
+        });
+
+        textFieldLTShortName.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                checkBoxGenerateLT.setSelected(false);
+            }
+        });
     }
 
     /**
@@ -253,7 +307,7 @@ public class MainGUI extends JFrame {
      * Also updates progress bar status.
      */
     private void saveCriteria() {
-        if (stage < 3) return;
+        if (stage < 2) return;
 
         saveCriteria(comboBoxCriteria.getSelectedIndex(), stage);
         criteriaChecked[comboBoxCriteria.getSelectedIndex()] = true;
@@ -274,6 +328,10 @@ public class MainGUI extends JFrame {
      */
     private void switchToSecondTab() {
         if (stage < 4) return;
+
+        for (int i = 0; i < criterias.length; i++) {
+            LinguisticTerm.normalizeData(criterias[i].getLts());
+        }
 
         if (!SwingUtils.checkTableForNonEmpty(tableDecisionMatrixInitial)) {
             JOptionPane.showMessageDialog(null, "Fill decision matrix.");
@@ -340,9 +398,19 @@ public class MainGUI extends JFrame {
 
         textFieldCriteriaName.setText(criterias[index].getName());
 
-        if (criterias[index].getLts() != null) {
-            textFieldCriteriaLTCount.setText(criterias[index].getLts().size() + "");
-            showLTProperties(index, 0, stage);
+        if (criterias[index] != null) {
+            if (criterias[index].getLts() != null && criterias[index].getLts().size() != 0) {
+                textFieldCriteriaLTCount.setText(criterias[index].getLts().size() + "");
+                showLTProperties(index, 0, stage);
+            } else {
+                textFieldLTLongName.setText("");
+                textFieldLTShortName.setText("");
+                comboBoxLTType.setSelectedIndex(0);
+                textFieldLTP1.setText("");
+                textFieldLTP2.setText("");
+                textFieldLTP3.setText("");
+                textFieldLTP4.setText("");
+            }
         }
     }
 
@@ -357,6 +425,8 @@ public class MainGUI extends JFrame {
         if (stage < 2) return;
 
         if (criterias[index].getLts().size() > 0) {
+            labelLTNo.setText("0");
+
             textFieldLTLongName.setText(criterias[index].getLts().get(ltIndex).getName());
             textFieldLTShortName.setText(criterias[index].getLts().get(ltIndex).getShortName());
 
@@ -398,13 +468,10 @@ public class MainGUI extends JFrame {
                 for (int i = 0; i < ltCount; i++) {
                     criterias[index].getLts().add(new LinguisticTerm());
                 }
+                saveLTProperties(index, 0, stage);
             }
 
 //            labelLTNo.setText("0");
-
-            if (!checkBoxGenerateLT.isSelected()) {
-                saveLTProperties(index, 0, stage);
-            }
         }
     }
 
@@ -417,6 +484,12 @@ public class MainGUI extends JFrame {
      */
     private void saveLTProperties(int index, int ltIndex, int stage) {
         if (stage < 2) return;
+
+        if (checkBoxGenerateLT.isSelected()){
+            int ltCount = Integer.parseInt(textFieldCriteriaLTCount.getText());
+            criterias[index].setLts(LinguisticTerm.generateTermList(ltCount));
+            return;
+        }
 
         if (!(SwingUtils.checkTFForDouble(textFieldLTP1, "LT point 1") || SwingUtils.checkTFForDouble(textFieldLTP2, "LT point 2") ||
                 SwingUtils.checkTFForDouble(textFieldLTP3, "LT point 3"))) {
