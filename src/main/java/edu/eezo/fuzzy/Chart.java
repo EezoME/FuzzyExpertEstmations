@@ -50,21 +50,46 @@ public class Chart extends ApplicationFrame {
             XYSeries series = new XYSeries(linguisticTerms.get(i).getShortName());
             double[] points = linguisticTerms.get(i).getPoints();
 
+            points = normalizeData(points);
+
             if (points.length == 3) {
-                series.add(linguisticTerms.get(i).getPoints()[0], 0.0);
-                series.add(linguisticTerms.get(i).getPoints()[1], 1.0);
-                series.add(linguisticTerms.get(i).getPoints()[2], 0.0);
+                series.add(points[0], 0.0);
+                series.add(points[1], 1.0);
+                series.add(points[2], 0.0);
             } else if (points.length == 4) {
-                series.add(linguisticTerms.get(i).getPoints()[0], 0.0);
-                series.add(linguisticTerms.get(i).getPoints()[1], 1.0);
-                series.add(linguisticTerms.get(i).getPoints()[2], 1.0);
-                series.add(linguisticTerms.get(i).getPoints()[3], 0.0);
+                series.add(points[0], 0.0);
+                series.add(points[1], 1.0);
+                series.add(points[2], 1.0);
+                series.add(points[3], 0.0);
             }
 
             dataset.addSeries(series);
         }
 
         return dataset;
+    }
+
+    private double[] normalizeData(double[] points) {
+        double min = Double.MAX_VALUE;
+        double max = -Double.MAX_VALUE;
+
+        for (int i = 0; i < points.length; i++) {
+            if (min > points[i]) min = points[i];
+            if (max < points[i]) max = points[i];
+        }
+
+        double[] result = new double[points.length];
+
+        for (int i = 0; i < result.length; i++) {
+            if (Double.compare(points[i], 0.0d) == 0) {
+                result[i] = 0.0d;
+                continue;
+            }
+
+            result[i] = (points[i] - min) / (max - min);
+        }
+
+        return result;
     }
 
     // ! Need to override this to avoid main window closing.

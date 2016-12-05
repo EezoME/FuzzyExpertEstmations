@@ -144,6 +144,11 @@ public class MainGUI extends JFrame {
 
                     standartTableInitialization(tableDecisionMatrixInitial);
                 }
+
+                int nextIndex = comboBoxCriteria.getSelectedIndex() + 1;
+                if (nextIndex >= criterias.length) nextIndex = 0;
+                comboBoxCriteria.setSelectedIndex(nextIndex);
+                showCriteria(nextIndex, stage);
             }
         });
         comboBoxLTType.addActionListener(new ActionListener() {
