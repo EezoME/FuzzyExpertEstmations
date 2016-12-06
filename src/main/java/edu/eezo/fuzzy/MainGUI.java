@@ -216,25 +216,44 @@ public class MainGUI extends JFrame {
 
     private void showCriteria(int index, int stage) {
         if (stage == 1) return;
+
         textFieldCriteriaName.setText(criterias[index].getName());
-        if (criterias[index].getLts() != null) {
-            textFieldCriteriaLTCount.setText(criterias[index].getLts().size() + "");
-            showLTProperties(index, 0, stage);
+
+        if (criterias[index] != null) {
+            if (criterias[index].getLts() != null && criterias[index].getLts().size() != 0) {
+                textFieldCriteriaLTCount.setText(criterias[index].getLts().size() + "");
+                showLTProperties(index, 0, stage);
+            } else {
+                textFieldLTLongName.setText("");
+                textFieldLTShortName.setText("");
+                comboBoxLTType.setSelectedIndex(0);
+                textFieldLTP1.setText("");
+                textFieldLTP2.setText("");
+                textFieldLTP3.setText("");
+                textFieldLTP4.setText("");
+            }
         }
     }
 
     private void showLTProperties(int index, int ltIndex, int stage) {
         if (stage < 2) return;
+
         if (criterias[index].getLts().size() > 0) {
+            labelLTNo.setText("0");
+
             textFieldLTLongName.setText(criterias[index].getLts().get(ltIndex).getName());
             textFieldLTShortName.setText(criterias[index].getLts().get(ltIndex).getShortName());
+
             if (criterias[index].getLts().get(ltIndex).getType() != null) {
                 comboBoxLTType.setSelectedItem(criterias[index].getLts().get(ltIndex).getType());
             }
+
             if (criterias[index].getLts().get(ltIndex).getPoints() == null) return;
+
             textFieldLTP1.setText(criterias[index].getLts().get(ltIndex).getPoints()[0] + "");
             textFieldLTP2.setText(criterias[index].getLts().get(ltIndex).getPoints()[1] + "");
             textFieldLTP3.setText(criterias[index].getLts().get(ltIndex).getPoints()[2] + "");
+
             if (comboBoxLTType.getSelectedItem().equals(LTType.TRAPEZOIDAL)) {
                 textFieldLTP4.setText(criterias[index].getLts().get(ltIndex).getPoints()[3] + "");
             }
@@ -264,6 +283,14 @@ public class MainGUI extends JFrame {
     }
 
     private void saveLTProperties(int index, int ltIndex, int stage) {
+        if (stage < 2) return;
+
+        if (checkBoxGenerateLT.isSelected()) {
+            int ltCount = Integer.parseInt(textFieldCriteriaLTCount.getText());
+            criterias[index].setLts(LinguisticTerm.generateTermList(ltCount));
+            return;
+        }
+
         if (!(checkTFForPositiveDouble(textFieldLTP1, "Первая точка терма") || checkTFForPositiveDouble(textFieldLTP2, "Вторая точка терма") ||
                 checkTFForPositiveDouble(textFieldLTP3, "Третья точка терма"))) {
             return;
