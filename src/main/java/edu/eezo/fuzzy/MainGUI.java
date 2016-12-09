@@ -9,6 +9,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Stack;
 
 /**
  * Multi-Criteria Decision-Making Method Based On Fuzzy Expert Estimations.
@@ -56,6 +57,8 @@ public class MainGUI extends JFrame {
     private JTable tableAlphaSecondWay;
     private JButton buttonNextCriteria;
     private JButton buttonEnableDataInput;
+    private JTable tableResult;
+    private JTextArea textAreaResult;
 
     private int alternativesCount;
     private int criteriaCount;
@@ -77,7 +80,7 @@ public class MainGUI extends JFrame {
 
     public MainGUI() {
         super("Fuzzy Expert Estimations");
-        setSize(910, 610);
+        setSize(1050, 660);
         setLocationRelativeTo(null);
         setContentPane(rootPanel);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -361,6 +364,7 @@ public class MainGUI extends JFrame {
         SwingUtils.jTableInitiation(tableAggregationSecondWay, new String[]{"E\\Q", "Q"}, alternativesCount);
         SwingUtils.jTableInitiation(tableAlphaSecondWay, new String[]{"E\\Q", "Q"}, alternativesCount);
         SwingUtils.jTableInitiation(tableConvolution, new String[]{"E", "I_op", "I_pes", "I_agg"}, alternativesCount);
+        generateEmptyResultTable();
 
         tabbedPane1.setSelectedIndex(1);
 
@@ -438,7 +442,7 @@ public class MainGUI extends JFrame {
         if (stage < 2) return;
 
         if (criterias[index].getLts().size() > 0) {
-            labelLTNo.setText("0");
+            labelLTNo.setText(ltIndex + "");
 
             textFieldLTLongName.setText(criterias[index].getLts().get(ltIndex).getName());
             textFieldLTShortName.setText(criterias[index].getLts().get(ltIndex).getShortName());
@@ -503,7 +507,7 @@ public class MainGUI extends JFrame {
     private void saveLTProperties(int index, int ltIndex, int stage) {
         if (stage < 2) return;
 
-        if (checkBoxGenerateLT.isSelected()){
+        if (checkBoxGenerateLT.isSelected()) {
             int ltCount = Integer.parseInt(textFieldCriteriaLTCount.getText());
             criterias[index].setLts(LinguisticTerm.generateTermList(ltCount));
             return;
@@ -514,7 +518,6 @@ public class MainGUI extends JFrame {
             return;
         }
 
-        //boolean isTrapezoidal = criterias[index].getLts().get(ltIndex).getType() != LTType.TRIANGULAR;
         boolean isTrapezoidal = comboBoxLTType.getSelectedItem().equals(LTType.TRAPEZOIDAL);
         if (isTrapezoidal && !SwingUtils.checkTFForDouble(textFieldLTP4, "LT point 4")) {
             return;
@@ -589,18 +592,46 @@ public class MainGUI extends JFrame {
         // results
         int winOptimistic = -1;
         int winPessimistic = -1;
-        double pOpt = Integer.MIN_VALUE;
-        double pPes = Integer.MIN_VALUE;
+        double optResMax = Integer.MIN_VALUE;
+        double pesResMax = Integer.MIN_VALUE;
+        double[] optRes = new double[convolutionOptimisticResults.length];
+        double[] pesRes = new double[convolutionOptimisticResults.length];
 
         for (int i = 0; i < convolutionOptimisticResults.length; i++) {
-            if (pOpt < Math.max(1.0 - Math.max(1.0 - convolutionOptimisticResults[i][0], 0.0), 0.0)) {
+            optRes[i] = Math.max(1.0 - Math.max(1.0 - convolutionOptimisticResults[i][0], 0.0), 0.0);
+            pesRes[i] = Math.max(1.0 - Math.max(1.0 - convolutionOptimisticResults[i][0], 0.0), 0.0);
+
+            if (optRes[i] > optResMax) { // change > to >= for get always last max instead of first
+                optResMax = optRes[i];
                 winOptimistic = i + 1;
             }
 
-            if (pPes < Math.max(1.0 - Math.max(1.0 - convolutionOptimisticResults[i][0], 0.0), 0.0)) {
+            if (pesRes[i] > pesResMax) {
+                pesResMax = pesRes[i];
                 winPessimistic = i + 1;
             }
         }
+
+        int[] optimisticIndexes = getSortedIndexes(optRes);
+        int[] pessimisticIndexes = getSortedIndexes(pesRes);
+
+        textAreaResult.append("Optimistic: ");
+
+        for (int j = 1; j < tableResult.getColumnCount(); j++) {
+            tableResult.setValueAt(optRes[j - 1], 0, j);
+            tableResult.setValueAt(pesRes[j - 1], 1, j);
+            textAreaResult.append("E" + optimisticIndexes[j - 1] + " > ");
+        }
+
+        textAreaResult.replaceRange("", textAreaResult.getText().length() - 3, textAreaResult.getText().length());
+        textAreaResult.append("\nPessimistic: ");
+
+        for (int i = 0; i < pessimisticIndexes.length; i++) {
+            textAreaResult.append("E" + pessimisticIndexes[i] + " > ");
+        }
+
+        textAreaResult.replaceRange("", textAreaResult.getText().length() - 3, textAreaResult.getText().length());
+        textAreaResult.append("\n");
 
         long duration = System.currentTimeMillis() - startTime;
 
@@ -652,13 +683,28 @@ public class MainGUI extends JFrame {
 
         // results
         int win = -1;
-        double pAgr = Integer.MIN_VALUE;
+        double agrResMax = Integer.MIN_VALUE;
+        double[] agrRes = new double[convolutionAggregationWayResults.length];
 
         for (int i = 0; i < convolutionAggregationWayResults.length; i++) {
-            if (pAgr < Math.max(1.0 - Math.max(1.0 - convolutionAggregationWayResults[i][0], 0.0), 0.0)) {
+            agrRes[i] = Math.max(1.0 - Math.max(1.0 - convolutionAggregationWayResults[i][0], 0.0), 0.0);
+            if (agrRes[i] > agrResMax) {
+                agrResMax = agrRes[i];
                 win = i + 1;
             }
         }
+
+        int[] aggrIndexes = getSortedIndexes(agrRes);
+
+        textAreaResult.append("Aggregation: ");
+
+        for (int j = 1; j < tableResult.getColumnCount(); j++) {
+            tableResult.setValueAt(agrRes[j - 1], 2, j);
+            textAreaResult.append("E" + aggrIndexes[j - 1] + " > ");
+        }
+
+        textAreaResult.replaceRange("", textAreaResult.getText().length() - 3, textAreaResult.getText().length());
+        textAreaResult.append("\n");
 
         long duration = System.currentTimeMillis() - startTime;
 
@@ -711,6 +757,49 @@ public class MainGUI extends JFrame {
     }
 
 
+    public static int[] getSortedIndexes(double[] array) {
+        if (array == null || array.length == 0) {
+            return new int[0];
+        }
+
+        int[] indexes = new int[array.length];
+
+        for (int i = 0; i < indexes.length; i++) {
+            indexes[i] = i + 1;
+        }
+
+        for (int i = 0; i < array.length - 1; i++) {
+            boolean swapped = false;
+            for (int j = 0; j < array.length - i - 1; j++) {
+                if (Double.compare(array[j], array[j + 1]) > 0) {
+                    int tmp = indexes[j];
+                    indexes[j] = indexes[j + 1];
+                    indexes[j + 1] = tmp;
+                    swapped = true;
+                }
+            }
+
+            if (!swapped)
+                break;
+        }
+
+        return indexes;
+    }
+
+    private void generateEmptyResultTable() {
+        DefaultTableModel model = (DefaultTableModel) tableResult.getModel();
+        String[] identifiers = new String[alternativesCount + 1];
+        identifiers[0] = "Method";
+        for (int i = 1; i < identifiers.length; i++) {
+            identifiers[i] = "E" + i;
+        }
+        model.setColumnIdentifiers(identifiers);
+        model.setRowCount(3);
+        model.setValueAt("Optimistic", 0, 0);
+        model.setValueAt("Pessimistic", 1, 0);
+        model.setValueAt("Aggregation", 2, 0);
+    }
+
     /* TOGGLES */
 
     /**
@@ -758,6 +847,7 @@ public class MainGUI extends JFrame {
     private void toggleDecisionMatrixComponents(boolean isEnable) {
         tableDecisionMatrixInitial.setEnabled(isEnable);
         buttonNextTab.setEnabled(isEnable);
+        buttonEnableDataInput.setEnabled(isEnable);
     }
 
     /**
