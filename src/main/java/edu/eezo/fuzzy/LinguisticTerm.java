@@ -169,6 +169,8 @@ public class LinguisticTerm {
             }
         }
 
+        if (Double.compare(max, 0.0) == 0) return terms;
+
         double coeff = 1 / max;
 
         for (int i = 0; i < terms.size(); i++) {

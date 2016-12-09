@@ -55,6 +55,7 @@ public class MainGUI extends JFrame {
     private JTable tableAggregationSecondWay;
     private JTable tableAlphaSecondWay;
     private JButton buttonNextCriteria;
+    private JButton buttonEnableDataInput;
 
     private int alternativesCount;
     private int criteriaCount;
@@ -153,7 +154,7 @@ public class MainGUI extends JFrame {
         comboBoxCriteria.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                showCriteria(comboBoxCriteria.getSelectedIndex(), stage);
+                if (stage > 1) showCriteria(comboBoxCriteria.getSelectedIndex(), stage);
             }
         });
 
@@ -243,6 +244,15 @@ public class MainGUI extends JFrame {
                 checkBoxGenerateLT.setSelected(false);
             }
         });
+        buttonEnableDataInput.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleDecisionMatrixComponents(false);
+                toggleLTComponents(true);
+                toggleCriteriaComponents(true);
+                progressBarDone.setValue(0);
+            }
+        });
     }
 
     /**
@@ -315,6 +325,8 @@ public class MainGUI extends JFrame {
 
         if (progressBarDone.getValue() == progressBarDone.getMaximum()) {
             toggleDecisionMatrixComponents(true);
+            toggleLTComponents(false);
+            toggleCriteriaComponents(false);
 
             standardTableInitialization(tableDecisionMatrixInitial);
         }
@@ -327,16 +339,17 @@ public class MainGUI extends JFrame {
      * Check the decision table and makes linguistic terms unwrapped.
      */
     private void switchToSecondTab() {
-        if (stage < 4) return;
-
-        for (int i = 0; i < criterias.length; i++) {
-            LinguisticTerm.normalizeData(criterias[i].getLts());
-        }
+        if (stage < 2) return;
 
         if (!SwingUtils.checkTableForNonEmpty(tableDecisionMatrixInitial)) {
             JOptionPane.showMessageDialog(null, "Fill decision matrix.");
             return;
         }
+
+        for (int i = 0; i < criterias.length; i++) {
+            LinguisticTerm.normalizeData(criterias[i].getLts());
+        }
+
 
         toggleSecondTabComponents(true);
 
@@ -375,7 +388,7 @@ public class MainGUI extends JFrame {
      * Makes pessimistic, optimistic and aggregation way calculations.
      */
     private void doNextOnSecondTab() {
-        if (stage < 5) return;
+        if (stage < 2) return;
 
         if (!SwingUtils.checkTFForDouble(textFieldAlpha, "Alpha value")) return;
 
@@ -394,7 +407,7 @@ public class MainGUI extends JFrame {
      * @param stage current stage
      */
     private void showCriteria(int index, int stage) {
-        if (stage == 1) return;
+        if (stage < 2) return;
 
         textFieldCriteriaName.setText(criterias[index].getName());
 
@@ -453,7 +466,7 @@ public class MainGUI extends JFrame {
      * @param stage current stage
      */
     private void saveCriteria(int index, int stage) {
-        if (stage != 1 && stage < 3) return;
+        if (stage != 1 && stage < 2) return;
 
         criterias[index].setName(textFieldCriteriaName.getText());
 
@@ -463,15 +476,20 @@ public class MainGUI extends JFrame {
             if (checkBoxGenerateLT.isSelected()) {
                 criterias[index].setLts(LinguisticTerm.generateTermList(ltCount));
             } else {
-                criterias[index].setLts(new ArrayList<LinguisticTerm>());
+                if (criterias[index].getLts() == null || criterias[index].getLts().size() == 0) {
+                    criterias[index].setLts(new ArrayList<LinguisticTerm>());
 
-                for (int i = 0; i < ltCount; i++) {
-                    criterias[index].getLts().add(new LinguisticTerm());
+                    for (int i = 0; i < ltCount; i++) {
+                        criterias[index].getLts().add(new LinguisticTerm());
+                    }
+
                 }
-                saveLTProperties(index, 0, stage);
+//                for (int i = 0; i < ltCount; i++) {
+//                    if (stage != 1) saveLTProperties(index, i, stage);
+//                }
             }
 
-//            labelLTNo.setText("0");
+            labelLTNo.setText("0");
         }
     }
 
@@ -728,6 +746,7 @@ public class MainGUI extends JFrame {
         buttonSaveLT.setEnabled(isEnable);
         buttonCriteriaGraph.setEnabled(isEnable);
         buttonSaveCriteria.setEnabled(isEnable);
+        buttonNextCriteria.setEnabled(isEnable);
     }
 
     /**
