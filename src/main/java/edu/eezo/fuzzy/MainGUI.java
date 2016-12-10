@@ -78,7 +78,7 @@ public class MainGUI extends JFrame {
 
 
     public MainGUI() {
-        super("Fuzzy Expert Estimations");
+        super("Многокритерийный метод принятия решения на основе нечётких экспертных оценок");
         setSize(1050, 660);
         setLocationRelativeTo(null);
         setContentPane(rootPanel);
@@ -263,8 +263,8 @@ public class MainGUI extends JFrame {
      * Creates new criteria instants.
      */
     private void acceptCounts() {
-        if (SwingUtils.checkTFForPositiveInteger(textFieldAlternativesCount, "Alternatives Count") ||
-                SwingUtils.checkTFForPositiveInteger(textFieldCriteriaCount, "Criteria Count")) {
+        if (SwingUtils.checkTFForPositiveInteger(textFieldAlternativesCount, "Число альтернатив") ||
+                SwingUtils.checkTFForPositiveInteger(textFieldCriteriaCount, "Число критериев")) {
             alternativesCount = Integer.parseInt(textFieldAlternativesCount.getText());
             criteriaCount = Integer.parseInt(textFieldCriteriaCount.getText());
             criterias = new Criteria[criteriaCount];
@@ -344,7 +344,7 @@ public class MainGUI extends JFrame {
         if (stage < 2) return;
 
         if (!SwingUtils.checkTableForNonEmpty(tableDecisionMatrixInitial)) {
-            JOptionPane.showMessageDialog(null, "Fill decision matrix.");
+            JOptionPane.showMessageDialog(null, "Заполните матрицу решений!");
             return;
         }
 
@@ -393,7 +393,7 @@ public class MainGUI extends JFrame {
     private void doNextOnSecondTab() {
         if (stage < 2) return;
 
-        if (!SwingUtils.checkTFForDouble(textFieldAlpha, "Alpha value")) return;
+        if (!SwingUtils.checkTFForDouble(textFieldAlpha, "Значение альфа")) return;
 
         pessimisticAndOptimistic();
         aggregational();
@@ -474,7 +474,7 @@ public class MainGUI extends JFrame {
 
         criterias[index].setName(textFieldCriteriaName.getText());
 
-        if (SwingUtils.checkTFForPositiveInteger(textFieldCriteriaLTCount, "LT count")) {
+        if (SwingUtils.checkTFForPositiveInteger(textFieldCriteriaLTCount, "Число термов")) {
             int ltCount = Integer.parseInt(textFieldCriteriaLTCount.getText());
 
             if (checkBoxGenerateLT.isSelected()) {
@@ -513,13 +513,13 @@ public class MainGUI extends JFrame {
             return;
         }
 
-        if (!(SwingUtils.checkTFForDouble(textFieldLTP1, "LT point 1") || SwingUtils.checkTFForDouble(textFieldLTP2, "LT point 2") ||
-                SwingUtils.checkTFForDouble(textFieldLTP3, "LT point 3"))) {
+        if (!(SwingUtils.checkTFForDouble(textFieldLTP1, "Первая точка терма") || SwingUtils.checkTFForDouble(textFieldLTP2, "Вторая точка терма") ||
+                SwingUtils.checkTFForDouble(textFieldLTP3, "Третья точка терма"))) {
             return;
         }
 
         boolean isTrapezoidal = comboBoxLTType.getSelectedItem().equals(LTType.TRAPEZOIDAL);
-        if (isTrapezoidal && !SwingUtils.checkTFForDouble(textFieldLTP4, "LT point 4")) {
+        if (isTrapezoidal && !SwingUtils.checkTFForDouble(textFieldLTP4, "Четвёртая точка терма")) {
             return;
         }
 
@@ -534,7 +534,7 @@ public class MainGUI extends JFrame {
         }
 
         if ((points[0] > points[1] || points[1] > points[2]) || (isTrapezoidal && points[2] > points[3])) {
-            JOptionPane.showMessageDialog(null, "Wrong points values");
+            JOptionPane.showMessageDialog(null, "Неверно введены точки терма.");
             return;
         }
 
@@ -615,7 +615,7 @@ public class MainGUI extends JFrame {
         int[] optimisticIndexes = getSortedIndexes(optRes);
         int[] pessimisticIndexes = getSortedIndexes(pesRes);
 
-        textAreaResult.append("Optimistic: ");
+        textAreaResult.append("Оптимистическая: ");
 
         for (int j = 1; j < tableResult.getColumnCount(); j++) {
             tableResult.setValueAt(optRes[j - 1], 0, j);
@@ -624,7 +624,7 @@ public class MainGUI extends JFrame {
         }
 
         textAreaResult.replaceRange("", textAreaResult.getText().length() - 3, textAreaResult.getText().length());
-        textAreaResult.append("\nPessimistic: ");
+        textAreaResult.append("\nПессимистическая: ");
 
         for (int i = 0; i < pessimisticIndexes.length; i++) {
             textAreaResult.append("E" + pessimisticIndexes[i] + " > ");
@@ -635,8 +635,8 @@ public class MainGUI extends JFrame {
 
         long duration = System.currentTimeMillis() - startTime;
 
-        labelOptimisticResult.setText("Optimistic winner: E" + winOptimistic + " (duration: " + duration + " ms)");
-        labelPessimisticResult.setText("Pessimistic winner: E" + winPessimistic + " (duration: " + duration + " ms)");
+        labelOptimisticResult.setText("Победитель по оптимистической: E" + winOptimistic + " (время: " + duration + " мс)");
+        labelPessimisticResult.setText("Победитель по пессимистической: E" + winPessimistic + " (время: " + duration + " мс)");
     }
 
     private void aggregational() {
@@ -696,7 +696,7 @@ public class MainGUI extends JFrame {
 
         int[] aggrIndexes = getSortedIndexes(agrRes);
 
-        textAreaResult.append("Aggregation: ");
+        textAreaResult.append("Повторная аггрегация: ");
 
         for (int j = 1; j < tableResult.getColumnCount(); j++) {
             tableResult.setValueAt(agrRes[j - 1], 2, j);
@@ -708,7 +708,7 @@ public class MainGUI extends JFrame {
 
         long duration = System.currentTimeMillis() - startTime;
 
-        labelAggregationResult.setText("Aggregation winner: E" + win + " (duration: " + duration + " ms)");
+        labelAggregationResult.setText("Победитель по аггрегации: E" + win + " (время: " + duration + " мс)");
     }
 
     public static void main(String[] args) {
@@ -799,15 +799,15 @@ public class MainGUI extends JFrame {
     private void generateEmptyResultTable() {
         DefaultTableModel model = (DefaultTableModel) tableResult.getModel();
         String[] identifiers = new String[alternativesCount + 1];
-        identifiers[0] = "Method";
+        identifiers[0] = "Метод";
         for (int i = 1; i < identifiers.length; i++) {
             identifiers[i] = "E" + i;
         }
         model.setColumnIdentifiers(identifiers);
         model.setRowCount(3);
-        model.setValueAt("Optimistic", 0, 0);
-        model.setValueAt("Pessimistic", 1, 0);
-        model.setValueAt("Aggregation", 2, 0);
+        model.setValueAt("Оптимистический", 0, 0);
+        model.setValueAt("Пессимистический", 1, 0);
+        model.setValueAt("Повторной аггрегации", 2, 0);
     }
 
     /* TOGGLES */

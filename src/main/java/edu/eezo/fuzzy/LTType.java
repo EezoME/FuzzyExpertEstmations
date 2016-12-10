@@ -7,13 +7,13 @@ public enum LTType {
     TRIANGULAR {
         @Override
         public String getReadableString() {
-            return "Triangular";
+            return "Треугольная";
         }
     },
     TRAPEZOIDAL {
         @Override
         public String getReadableString() {
-            return "Trapezoidal";
+            return "Трапециевидная";
         }
     };
 

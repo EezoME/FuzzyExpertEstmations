@@ -56,17 +56,17 @@ public class SwingUtils {
      */
     public static boolean checkTF(JTextField textField, String tfDesc) {
         if (!textField.isValid()) {
-            JOptionPane.showMessageDialog(null, "Text field '" + tfDesc + "' is not valid.");
+            JOptionPane.showMessageDialog(null, "Текстовое поле '" + tfDesc + "' невалидно.");
             return false;
         }
 
         if (!textField.isEnabled()) {
-            JOptionPane.showMessageDialog(null, "Text field '" + tfDesc + "' is not enabled.");
+            JOptionPane.showMessageDialog(null, "Текстовое поле '" + tfDesc + "' недоступно.");
             return false;
         }
 
         if (textField.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Text field '" + tfDesc + "' is empty.");
+            JOptionPane.showMessageDialog(null, "Текстовое поле '" + tfDesc + "' пустое.");
             return false;
         }
 
@@ -87,11 +87,11 @@ public class SwingUtils {
 
         try {
             if (Integer.parseInt(textField.getText()) <= 0) {
-                JOptionPane.showMessageDialog(null, "Value in field '" + fieldDesc + "' must be > 0");
+                JOptionPane.showMessageDialog(null, "Значение в поле '" + fieldDesc + "' должно быть больше 0");
                 return false;
             }
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "You typed non integer value in filed '" + fieldDesc + "'");
+            JOptionPane.showMessageDialog(null, "Вы введи нецелочисленное значение в поле '" + fieldDesc + "'");
             return false;
         }
 
@@ -113,7 +113,7 @@ public class SwingUtils {
         try {
             Double.parseDouble(textField.getText());
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "You typed non double value in filed '" + fieldDesc + "'");
+            JOptionPane.showMessageDialog(null, "Вы ввели нечисловое знаение в поле '" + fieldDesc + "'");
             return false;
         }
 

@@ -89,13 +89,13 @@ public class Chart extends ApplicationFrame {
     }
 
     public static void main(String criteriaMark, String criteriaName, java.util.List<LinguisticTerm> linguisticTerms) {
-        Chart chart = new Chart(criteriaMark + " - original", criteriaName, linguisticTerms, true);
+        Chart chart = new Chart(criteriaMark + " - обычный вид", criteriaName, linguisticTerms, true);
         chart.pack();
         RefineryUtilities.centerFrameOnScreen(chart);
         chart.setLocation(chart.getX() - 288, chart.getY());
         chart.setVisible(true);
 
-        Chart chart2 = new Chart(criteriaMark + " - normalized", criteriaName, linguisticTerms, false);
+        Chart chart2 = new Chart(criteriaMark + " - нормализованный вид", criteriaName, linguisticTerms, false);
         chart2.pack();
         RefineryUtilities.centerFrameOnScreen(chart2);
         chart2.setLocation(chart2.getX() + 288, chart2.getY());
