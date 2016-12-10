@@ -9,7 +9,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Stack;
 
 /**
  * Multi-Criteria Decision-Making Method Based On Fuzzy Expert Estimations.
@@ -419,6 +418,7 @@ public class MainGUI extends JFrame {
             if (criterias[index].getLts() != null && criterias[index].getLts().size() != 0) {
                 textFieldCriteriaLTCount.setText(criterias[index].getLts().size() + "");
                 showLTProperties(index, 0, stage);
+                labelLTNo.setText("0");
             } else {
                 textFieldLTLongName.setText("");
                 textFieldLTShortName.setText("");
@@ -439,7 +439,7 @@ public class MainGUI extends JFrame {
      * @param stage   current stage
      */
     private void showLTProperties(int index, int ltIndex, int stage) {
-        if (stage < 2) return;
+        if (stage < 2 || criterias[index].getLts() == null) return;
 
         if (criterias[index].getLts().size() > 0) {
             labelLTNo.setText(ltIndex + "");
@@ -757,6 +757,13 @@ public class MainGUI extends JFrame {
     }
 
 
+    /**
+     * Sorts indexes of specified array in ordinary order (from more to less).
+     * This method do not sorts specified array itself, it sorts only indexes and return a new array
+     *
+     * @param array specified array
+     * @return an array of indexes
+     */
     public static int[] getSortedIndexes(double[] array) {
         if (array == null || array.length == 0) {
             return new int[0];
@@ -786,6 +793,9 @@ public class MainGUI extends JFrame {
         return indexes;
     }
 
+    /**
+     * Generates a result table with initial data.
+     */
     private void generateEmptyResultTable() {
         DefaultTableModel model = (DefaultTableModel) tableResult.getModel();
         String[] identifiers = new String[alternativesCount + 1];

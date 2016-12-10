@@ -158,6 +158,11 @@ public class LinguisticTerm {
         return list;
     }
 
+    /**
+     * Normalizes linguistic term's points data for whole criteria.
+     * @param terms a list of linguistic terms (use <code>getLts()</code> method)
+     * @return normalized list of terms
+     */
     public static java.util.List<LinguisticTerm> normalizeData(java.util.List<LinguisticTerm> terms) {
         double max = -Double.MAX_VALUE;
 
@@ -214,7 +219,7 @@ public class LinguisticTerm {
         this.points = points;
     }
 
-    public LinguisticTerm makeClone(){
+    public LinguisticTerm makeClone() {
         return new LinguisticTerm(this.name, this.shortName, this.type, this.points);
     }
 }

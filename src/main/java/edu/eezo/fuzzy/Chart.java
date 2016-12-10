@@ -19,6 +19,8 @@ import java.util.ArrayList;
 
 /**
  * Class for diagram building.
+ * This class requires jFreeChart and jCommon libraries.
+ * <p>
  * Created by Eezo on 27.11.2016.
  */
 public class Chart extends ApplicationFrame {
@@ -27,6 +29,7 @@ public class Chart extends ApplicationFrame {
     public Chart(String applicationTitle, String chartTitle, java.util.List<LinguisticTerm> linguisticTerms, boolean isNormalize) {
         super(applicationTitle);
         this.linguisticTerms = new ArrayList<>();
+
         for (int i = 0; i < linguisticTerms.size(); i++) {
             this.linguisticTerms.add(linguisticTerms.get(i).makeClone());
         }
