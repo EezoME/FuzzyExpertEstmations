@@ -488,9 +488,6 @@ public class MainGUI extends JFrame {
                     }
 
                 }
-//                for (int i = 0; i < ltCount; i++) {
-//                    if (stage != 1) saveLTProperties(index, i, stage);
-//                }
             }
 
             labelLTNo.setText("0");

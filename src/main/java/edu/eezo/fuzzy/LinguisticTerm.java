@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Class represents a linguistic term.
  * Created by Eezo on 26.11.2016.
  */
 public class LinguisticTerm {
@@ -160,6 +161,7 @@ public class LinguisticTerm {
 
     /**
      * Normalizes linguistic term's points data for whole criteria.
+     *
      * @param terms a list of linguistic terms (use <code>getLts()</code> method)
      * @return normalized list of terms
      */
