@@ -51,9 +51,9 @@ public class MainGUI extends JFrame {
     private JLabel labelOptimisticResult;
     private JTable tableConvolution;
     private JLabel labelPessimisticResult;
-    private JLabel labelAggregationResult;
-    private JTable tableAggregationSecondWay;
-    private JTable tableAlphaSecondWay;
+    private JLabel labelGeneralResult;
+    private JTable tableAggregationGeneral;
+    private JTable tableAlphaGeneral;
     private JButton buttonNextCriteria;
     private JButton buttonEnableDataInput;
     private JTable tableResult;
@@ -360,8 +360,8 @@ public class MainGUI extends JFrame {
         standardTableInitialization(tableAggregation);
         standardTableInitialization(tableAlpha);
 
-        SwingUtils.jTableInitiation(tableAggregationSecondWay, new String[]{"E\\Q", "Q"}, alternativesCount);
-        SwingUtils.jTableInitiation(tableAlphaSecondWay, new String[]{"E\\Q", "Q"}, alternativesCount);
+        SwingUtils.jTableInitiation(tableAggregationGeneral, new String[]{"E\\Q", "Q"}, alternativesCount);
+        SwingUtils.jTableInitiation(tableAlphaGeneral, new String[]{"E\\Q", "Q"}, alternativesCount);
         SwingUtils.jTableInitiation(tableConvolution, new String[]{"E", "I_op", "I_pes", "I_agg"}, alternativesCount);
         generateEmptyResultTable();
 
@@ -396,7 +396,7 @@ public class MainGUI extends JFrame {
         if (!SwingUtils.checkTFForDouble(textFieldAlpha, "Alpha value")) return;
 
         pessimisticAndOptimistic();
-        aggregational();
+        general();
 
         stage = 6;
     }
@@ -636,7 +636,7 @@ public class MainGUI extends JFrame {
         labelPessimisticResult.setText("Pessimistic winner: E" + winPessimistic + " (duration: " + duration + " ms)");
     }
 
-    private void aggregational() {
+    private void general() {
         long startTime = System.currentTimeMillis();
 
         // AGGREGATION
@@ -648,43 +648,43 @@ public class MainGUI extends JFrame {
             }
         }
 
-        for (int i = 0; i < tableAggregationSecondWay.getRowCount(); i++) {
+        for (int i = 0; i < tableAggregationGeneral.getRowCount(); i++) {
             String[] aggExpr = new String[tableAggregation.getColumnCount() - 1];
 
             for (int j = 1; j < tableAggregation.getColumnCount(); j++) {
                 aggExpr[j - 1] = tableAggregation.getValueAt(i, j).toString();
             }
 
-            tableAggregationSecondWay.setValueAt(Criteria.rowAggregation(aggExpr), i, 1);
+            tableAggregationGeneral.setValueAt(Criteria.rowAggregation(aggExpr), i, 1);
         }
 
         double alpha = Double.parseDouble(textFieldAlpha.getText());
 
-        for (int i = 0; i < tableAggregationSecondWay.getRowCount(); i++) {
-            tableAlphaSecondWay.setValueAt(
-                    Criteria.alphaCut(tableAggregationSecondWay.getValueAt(i, 1).toString(), alpha),
+        for (int i = 0; i < tableAggregationGeneral.getRowCount(); i++) {
+            tableAlphaGeneral.setValueAt(
+                    Criteria.alphaCut(tableAggregationGeneral.getValueAt(i, 1).toString(), alpha),
                     i, 1);
         }
 
         // convolution
-        double[][] convolutionAggregationWayResults = new double[tableAlphaSecondWay.getRowCount()][2];
+        double[][] convolutionGeneralResults = new double[tableAlphaGeneral.getRowCount()][2];
 
-        for (int i = 0; i < tableAlphaSecondWay.getRowCount(); i++) {
-            String aggrExps = tableAlphaSecondWay.getValueAt(i, 1).toString();
+        for (int i = 0; i < tableAlphaGeneral.getRowCount(); i++) {
+            String aggrExps = tableAlphaGeneral.getValueAt(i, 1).toString();
 
-            convolutionAggregationWayResults[i] = Criteria.optimisticConvolution(new String[]{aggrExps});
+            convolutionGeneralResults[i] = Criteria.optimisticConvolution(new String[]{aggrExps});
             tableConvolution.setValueAt(
-                    "[ " + convolutionAggregationWayResults[i][0] + " ; " + convolutionAggregationWayResults[i][1] + " ]",
+                    "[ " + convolutionGeneralResults[i][0] + " ; " + convolutionGeneralResults[i][1] + " ]",
                     i, 3);
         }
 
         // results
         int win = -1;
         double agrResMax = Integer.MIN_VALUE;
-        double[] agrRes = new double[convolutionAggregationWayResults.length];
+        double[] agrRes = new double[convolutionGeneralResults.length];
 
-        for (int i = 0; i < convolutionAggregationWayResults.length; i++) {
-            agrRes[i] = Math.max(1.0 - Math.max(1.0 - convolutionAggregationWayResults[i][0], 0.0), 0.0);
+        for (int i = 0; i < convolutionGeneralResults.length; i++) {
+            agrRes[i] = Math.max(1.0 - Math.max(1.0 - convolutionGeneralResults[i][0], 0.0), 0.0);
             if (agrRes[i] > agrResMax) {
                 agrResMax = agrRes[i];
                 win = i + 1;
@@ -693,7 +693,7 @@ public class MainGUI extends JFrame {
 
         int[] aggrIndexes = getSortedIndexes(agrRes);
 
-        textAreaResult.append("Aggregation: ");
+        textAreaResult.append("General: ");
 
         for (int j = 1; j < tableResult.getColumnCount(); j++) {
             tableResult.setValueAt(agrRes[j - 1], 2, j);
@@ -705,7 +705,7 @@ public class MainGUI extends JFrame {
 
         long duration = System.currentTimeMillis() - startTime;
 
-        labelAggregationResult.setText("Aggregation winner: E" + win + " (duration: " + duration + " ms)");
+        labelGeneralResult.setText("General winner: E" + win + " (duration: " + duration + " ms)");
     }
 
     public static void main(String[] args) {
@@ -804,7 +804,7 @@ public class MainGUI extends JFrame {
         model.setRowCount(3);
         model.setValueAt("Optimistic", 0, 0);
         model.setValueAt("Pessimistic", 1, 0);
-        model.setValueAt("Aggregation", 2, 0);
+        model.setValueAt("General", 2, 0);
     }
 
     /* TOGGLES */
@@ -878,9 +878,9 @@ public class MainGUI extends JFrame {
         tableLT.setEnabled(isEnable);
         tableLTFull.setEnabled(isEnable);
         tableAggregation.setEnabled(isEnable);
-        tableAggregationSecondWay.setEnabled(isEnable);
+        tableAggregationGeneral.setEnabled(isEnable);
         tableAlpha.setEnabled(isEnable);
-        tableAlphaSecondWay.setEnabled(isEnable);
+        tableAlphaGeneral.setEnabled(isEnable);
         tableConvolution.setEnabled(isEnable);
     }
 }
