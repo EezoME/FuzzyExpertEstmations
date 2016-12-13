@@ -46,9 +46,11 @@ public class MainGUI extends JFrame {
     private JCheckBox checkBoxGenerateLT;
     private JProgressBar progressBarDone;
     private JButton buttonDoAlpha;
-    private JLabel labelOptResult;
+    private JLabel labelOptimisticResult;
     private JTable tableConvolution;
-    private JLabel labelPesResult;
+    private JLabel labelPessimisticResult;
+    private JButton buttonEnableDataInput;
+    private JTextArea textAreaResult;
 
     private int alternativesCount;
     private int criteriaCount;
@@ -68,20 +70,14 @@ public class MainGUI extends JFrame {
 
     public MainGUI() {
         super("Многокритерийный метод принятия решения на основе нечётких экспертных оценок");
-        setSize(900, 540);
+        setSize(1050, 660);
         setLocationRelativeTo(null);
         setContentPane(rootPanel);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setVisible(true);
+
         comboBoxLTType.addItem(LTType.TRAPEZOIDAL);
         comboBoxLTType.addItem(LTType.TRIANGULAR);
-        tableDecisionMatrixInitial.setDragEnabled(false);
-        tableLT.setEnabled(false);
-        tableLTFull.setEnabled(false);
-        tableAggregation.setEnabled(false);
-        tableAlpha.setEnabled(false);
-        tableConvolution.setEnabled(false);
-
 
         /* Disable until count entered */
         toggleCriteriaComponents(false);
@@ -91,6 +87,8 @@ public class MainGUI extends JFrame {
         toggleDecisionMatrixComponents(false);
         /* Disable until decision matrix accepted */
         toggleSecondTabComponents(false);
+        /* Always disable */
+        togglePermanentSecondTabComponents(false);
 
         buttonAcceptCounts.addActionListener(new ActionListener() {
             @Override
@@ -99,9 +97,12 @@ public class MainGUI extends JFrame {
                         checkTFForPositiveInteger(textFieldCriteriaCount, "Число критериев")) {
                     alternativesCount = Integer.parseInt(textFieldAlternativesCount.getText());
                     criteriaCount = Integer.parseInt(textFieldCriteriaCount.getText());
-                    toggleCriteriaComponents(true);
                     criterias = new Criteria[criteriaCount];
+
+                    toggleCriteriaComponents(true);
+
                     comboBoxCriteria.removeAllItems();
+
                     for (int i = 0; i < criteriaCount; i++) {
                         criterias[i] = new Criteria(i + 1);
                         comboBoxCriteria.addItem(criterias[i]);
@@ -111,6 +112,7 @@ public class MainGUI extends JFrame {
                     Arrays.fill(criteriaChecked, false);
                     progressBarDone.setMinimum(0);
                     progressBarDone.setMaximum(criteriaCount);
+
                     stage = 1;
                 }
             }
@@ -118,29 +120,38 @@ public class MainGUI extends JFrame {
         buttonLTAccept.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                stage = 2;
+                if (stage < 1) return;
+
                 saveCriteria(comboBoxCriteria.getSelectedIndex(), stage);
+
                 toggleLTComponents(true);
+
+                stage = 2;
             }
         });
         buttonSaveLT.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                stage = 3;
+                if (stage < 2) return;
+
                 saveLTProperties(comboBoxCriteria.getSelectedIndex(), Integer.parseInt(labelLTNo.getText()), stage);
+
+                stage = 3;
             }
         });
         buttonSaveCriteria.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (stage < 2) return;
-                stage = 4;
+
                 saveCriteria(comboBoxCriteria.getSelectedIndex(), stage);
                 criteriaChecked[comboBoxCriteria.getSelectedIndex()] = true;
                 updateProgressBar();
 
                 if (progressBarDone.getValue() == progressBarDone.getMaximum()) {
                     toggleDecisionMatrixComponents(true);
+                    toggleLTComponents(false);
+                    toggleCriteriaComponents(false);
 
                     standartTableInitialization(tableDecisionMatrixInitial);
                 }
@@ -149,8 +160,23 @@ public class MainGUI extends JFrame {
                 if (nextIndex >= criterias.length) nextIndex = 0;
                 comboBoxCriteria.setSelectedIndex(nextIndex);
                 showCriteria(nextIndex, stage);
+
+                stage = 4;
             }
         });
+        buttonNextTab.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                switchToSecondTab();
+            }
+        });
+        buttonDoAlpha.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                doNextOnSecondTab();
+            }
+        });
+
         comboBoxLTType.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -164,7 +190,7 @@ public class MainGUI extends JFrame {
         comboBoxCriteria.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                showCriteria(comboBoxCriteria.getSelectedIndex(), stage);
+                if (stage > 1) showCriteria(comboBoxCriteria.getSelectedIndex(), stage);
             }
         });
         buttonPrevLT.addActionListener(new ActionListener() {
@@ -192,22 +218,19 @@ public class MainGUI extends JFrame {
         buttonCriteriaGraph.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (stage >= 3)
+                if (stage >= 3 && criterias[comboBoxCriteria.getSelectedIndex()].getLts() != null)
                     Chart.main(criterias[comboBoxCriteria.getSelectedIndex()].toString(),
                             criterias[comboBoxCriteria.getSelectedIndex()].getName(),
                             criterias[comboBoxCriteria.getSelectedIndex()].getLts());
             }
         });
-        buttonNextTab.addActionListener(new ActionListener() {
+        buttonEnableDataInput.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                switchToSecondTab();
-            }
-        });
-        buttonDoAlpha.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                doNextOnSecondTab();
+                toggleDecisionMatrixComponents(false);
+                toggleLTComponents(true);
+                toggleCriteriaComponents(true);
+                progressBarDone.setValue(0);
             }
         });
     }
@@ -215,7 +238,7 @@ public class MainGUI extends JFrame {
     /* CRITERIA METHODS */
 
     private void showCriteria(int index, int stage) {
-        if (stage == 1) return;
+        if (stage < 2) return;
 
         textFieldCriteriaName.setText(criterias[index].getName());
 
@@ -223,6 +246,7 @@ public class MainGUI extends JFrame {
             if (criterias[index].getLts() != null && criterias[index].getLts().size() != 0) {
                 textFieldCriteriaLTCount.setText(criterias[index].getLts().size() + "");
                 showLTProperties(index, 0, stage);
+                labelLTNo.setText("0");
             } else {
                 textFieldLTLongName.setText("");
                 textFieldLTShortName.setText("");
@@ -236,10 +260,10 @@ public class MainGUI extends JFrame {
     }
 
     private void showLTProperties(int index, int ltIndex, int stage) {
-        if (stage < 2) return;
+        if (stage < 2 || criterias[index].getLts() == null) return;
 
         if (criterias[index].getLts().size() > 0) {
-            labelLTNo.setText("0");
+            labelLTNo.setText(ltIndex + "");
 
             textFieldLTLongName.setText(criterias[index].getLts().get(ltIndex).getName());
             textFieldLTShortName.setText(criterias[index].getLts().get(ltIndex).getShortName());
@@ -261,24 +285,27 @@ public class MainGUI extends JFrame {
     }
 
     private void saveCriteria(int index, int stage) {
-        if (stage < 1) return;
+        if (stage != 1 && stage < 2) return;
+
         criterias[index].setName(textFieldCriteriaName.getText());
+
         if (checkTFForPositiveInteger(textFieldCriteriaLTCount, "Число термов")) {
             int ltCount = Integer.parseInt(textFieldCriteriaLTCount.getText());
+
             if (checkBoxGenerateLT.isSelected()) {
                 criterias[index].setLts(LinguisticTerm.generateTermList(ltCount));
             } else {
-                criterias[index].setLts(new ArrayList<LinguisticTerm>());
-                for (int i = 0; i < ltCount; i++) {
-                    criterias[index].getLts().add(new LinguisticTerm());
+                if (criterias[index].getLts() == null || criterias[index].getLts().size() == 0) {
+                    criterias[index].setLts(new ArrayList<LinguisticTerm>());
+
+                    for (int i = 0; i < ltCount; i++) {
+                        criterias[index].getLts().add(new LinguisticTerm());
+                    }
+
                 }
             }
-            labelLTNo.setText("0");
-            if (stage == 2) return;
 
-            if (!checkBoxGenerateLT.isSelected()) {
-                saveLTProperties(index, 0, stage);
-            }
+            labelLTNo.setText("0");
         }
     }
 
@@ -295,11 +322,12 @@ public class MainGUI extends JFrame {
                 checkTFForPositiveDouble(textFieldLTP3, "Третья точка терма"))) {
             return;
         }
-        //boolean isTrapezoidal = criterias[index].getLts().get(ltIndex).getType() != LTType.TRIANGULAR;
+
         boolean isTrapezoidal = comboBoxLTType.getSelectedItem().equals(LTType.TRAPEZOIDAL);
         if (isTrapezoidal && !checkTFForPositiveDouble(textFieldLTP4, "Червётрая точка терма")) {
             return;
         }
+
         double[] points;
         points = isTrapezoidal ? new double[4] : new double[3];
         points[0] = Double.parseDouble(textFieldLTP1.getText());
@@ -320,15 +348,24 @@ public class MainGUI extends JFrame {
     /* SECOND TAB METHODS */
 
     private void switchToSecondTab() {
+        if (stage < 2) return;
+
+        if (!checkTableForNonEmpty(tableDecisionMatrixInitial)) {
+            JOptionPane.showMessageDialog(null, "Заполните матрицу решений.");
+            return;
+        }
+
         for (int i = 0; i < criterias.length; i++) {
             LinguisticTerm.normalizeData(criterias[i].getLts());
         }
 
         toggleSecondTabComponents(true);
+
         standartTableInitialization(tableLT);
         standartTableInitialization(tableLTFull);
         standartTableInitialization(tableAggregation);
         standartTableInitialization(tableAlpha);
+
         ((DefaultTableModel) tableConvolution.getModel()).setColumnIdentifiers(new String[]{"E", "I опт", "I песс"});
         ((DefaultTableModel) tableConvolution.getModel()).setRowCount(alternativesCount);
         for (int i = 0; i < tableConvolution.getRowCount(); i++) {
@@ -360,13 +397,18 @@ public class MainGUI extends JFrame {
                         i, j);
             }
         }
+
+        stage = 5;
     }
 
     private void doNextOnSecondTab() {
+        if (stage < 2) return;
+
         if (textFieldAlpha.getText().isEmpty()) {
             JOptionPane.showMessageDialog(null, "Введите значение альфа.");
             return;
         }
+
         try {
             // alpha
             double alpha = Double.parseDouble(textFieldAlpha.getText());
@@ -400,24 +442,54 @@ public class MainGUI extends JFrame {
             // results
             int winOptimistic = -1;
             int winPessimistic = -1;
-            double pOpt = Integer.MIN_VALUE;
-            double pPes = Integer.MIN_VALUE;
+            double optResMax = Integer.MIN_VALUE;
+            double pesResMax = Integer.MIN_VALUE;
+            double[] optRes = new double[convolutionOptimisticResults.length];
+            double[] pesRes = new double[convolutionOptimisticResults.length];
+
             for (int i = 0; i < convolutionOptimisticResults.length; i++) {
-                if (pOpt < Math.max(1.0 - Math.max(1.0 - convolutionOptimisticResults[i][0], 0.0), 0.0)) {
+                optRes[i] = Math.max(1.0 - Math.max(1.0 - convolutionOptimisticResults[i][0], 0.0), 0.0);
+                pesRes[i] = Math.max(1.0 - Math.max(1.0 - convolutionOptimisticResults[i][0], 0.0), 0.0);
+
+                if (optRes[i] > optResMax) { // change > to >= for get always last max instead of first
+                    optResMax = optRes[i];
                     winOptimistic = i + 1;
                 }
-                if (pPes < Math.max(1.0 - Math.max(1.0 - convolutionOptimisticResults[i][0], 0.0), 0.0)) {
+
+                if (pesRes[i] > pesResMax) {
+                    pesResMax = pesRes[i];
                     winPessimistic = i + 1;
                 }
             }
 
-            labelOptResult.setText("Победитель по оптимистической свёртке: E" + winOptimistic);
-            labelPesResult.setText("Победитель по пессимистической свёртке: E" + winPessimistic);
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "Значение альфа не является числом!");
-            e.printStackTrace();
+            int[] optimisticIndexes = getSortedIndexes(optRes);
+            int[] pessimisticIndexes = getSortedIndexes(pesRes);
+
+            textAreaResult.append("По оптимистической: ");
+
+            for (int j = 0; j < optimisticIndexes.length; j++) {
+                textAreaResult.append("E" + optimisticIndexes[j] + " > ");
+            }
+
+            textAreaResult.replaceRange("", textAreaResult.getText().length() - 3, textAreaResult.getText().length());
+            textAreaResult.append("\nПо пессимистической: ");
+
+            for (int i = 0; i < pessimisticIndexes.length; i++) {
+                textAreaResult.append("E" + pessimisticIndexes[i] + " > ");
+            }
+
+            textAreaResult.replaceRange("", textAreaResult.getText().length() - 3, textAreaResult.getText().length());
+            textAreaResult.append("\n");
+
+
+            labelOptimisticResult.setText("Победитель по оптиместической: E" + winOptimistic);
+            labelPessimisticResult.setText("Победитель по пессимистической: E" + winPessimistic);
+        } catch (NumberFormatException e){
+            JOptionPane.showMessageDialog(null, "Альфа должно быть числом.");
             return;
         }
+
+        stage = 6;
     }
 
 
@@ -453,12 +525,49 @@ public class MainGUI extends JFrame {
         progressBarDone.setValue(checkedCount);
     }
 
+    /**
+     * Sorts indexes of specified array in ordinary order (from more to less).
+     * This method do not sorts specified array itself, it sorts only indexes and return a new array
+     *
+     * @param array specified array
+     * @return an array of indexes
+     */
+    public static int[] getSortedIndexes(double[] array) {
+        if (array == null || array.length == 0) {
+            return new int[0];
+        }
+
+        int[] indexes = new int[array.length];
+
+        for (int i = 0; i < indexes.length; i++) {
+            indexes[i] = i + 1;
+        }
+
+        for (int i = 0; i < array.length - 1; i++) {
+            boolean swapped = false;
+            for (int j = 0; j < array.length - i - 1; j++) {
+                if (Double.compare(array[j], array[j + 1]) > 0) {
+                    int tmp = indexes[j];
+                    indexes[j] = indexes[j + 1];
+                    indexes[j + 1] = tmp;
+                    swapped = true;
+                }
+            }
+
+            if (!swapped)
+                break;
+        }
+
+        return indexes;
+    }
+
     /* TOGGLES */
 
     private void toggleCriteriaComponents(boolean isEnable) {
         comboBoxCriteria.setEnabled(isEnable);
         textFieldCriteriaName.setEnabled(isEnable);
         textFieldCriteriaLTCount.setEnabled(isEnable);
+        checkBoxGenerateLT.setEnabled(isEnable);
         buttonLTAccept.setEnabled(isEnable);
     }
 
@@ -474,11 +583,13 @@ public class MainGUI extends JFrame {
         buttonNextLT.setEnabled(isEnable);
         buttonSaveLT.setEnabled(isEnable);
         buttonCriteriaGraph.setEnabled(isEnable);
+        buttonSaveCriteria.setEnabled(isEnable);
     }
 
     private void toggleDecisionMatrixComponents(boolean isEnable) {
         tableDecisionMatrixInitial.setEnabled(isEnable);
         buttonNextTab.setEnabled(isEnable);
+        buttonEnableDataInput.setEnabled(isEnable);
     }
 
     private void toggleSecondTabComponents(boolean isEnable) {
@@ -486,7 +597,39 @@ public class MainGUI extends JFrame {
         buttonDoAlpha.setEnabled(isEnable);
     }
 
+    /**
+     * Changes components enable status.
+     * Opens/closes tables on tab 2.
+     *
+     * @param isEnable component enable status
+     */
+    private void togglePermanentSecondTabComponents(boolean isEnable) {
+        tableLT.setEnabled(isEnable);
+        tableLTFull.setEnabled(isEnable);
+        tableAggregation.setEnabled(isEnable);
+        tableAlpha.setEnabled(isEnable);
+        tableConvolution.setEnabled(isEnable);
+    }
+
     /* COMPONENTS CHECKS */
+
+    /**
+     * Checks specified table for empty cells.
+     *
+     * @param table specified table
+     * @return <b>true</b> if table has no empty cells, <b>false</b> - otherwise
+     */
+    public static boolean checkTableForNonEmpty(JTable table) {
+        for (int i = 0; i < table.getRowCount(); i++) {
+            for (int j = 0; j < table.getColumnCount(); j++) {
+                if (table.getValueAt(i, j) == null || table.getValueAt(i, j).toString().isEmpty()) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 
     private boolean checkTFForPositiveInteger(JTextField textField, String fieldDesc) {
         if (textField.getText().isEmpty()) {

@@ -53,7 +53,7 @@ public class Criteria {
     /**
      * Adds to specified terms all missing terms, that are between specified.<br>
      * Number of terms depends on each particular criteria.<br>
-     * F.e.: "L,H" -> "L,M,H"; "VL,M,VH" -> "VL,L,M,H,VH"
+     * F.e.: "Н,В" -> "Н,С,В"; "ОН,С,ОВ" -> "ОН,Н,С,В,ОВ"
      *
      * @param lts specified linguistic terms
      * @return supplemented term list as String
@@ -62,6 +62,8 @@ public class Criteria {
         if (lts == null || lts.isEmpty()) {
             return "";
         }
+
+        lts = lts.toUpperCase(); // to allow "н,с,в" instead of only "Н,С,В"
 
         try {
             String[] localLTs = getLocalLTs();
@@ -97,7 +99,7 @@ public class Criteria {
 
     /**
      * Makes aggregation of fuzzy number (linguistic term(s)).<br>
-     * F.e.: <code>"L" -> "[ 0 ; 0 ; 0.5 ]"</code><br>
+     * F.e.: <code>"Н" -> "[ 0 ; 0 ; 0.5 ]"</code><br>
      * Also converts triangular number to trapezoidal.<br>
      * F.e.: <code>"( 0 ; 0.5 ; 1 )" -> "( 0 ; 0.5 ; 0.5 ; 1 )"</code>
      *
@@ -109,7 +111,9 @@ public class Criteria {
             return "( ; ; ; )";
         }
 
-        // "L" | "L,M,H"
+        lts = lts.toUpperCase(); // to allow "н,с,в" instead of only "Н,С,В"
+
+        // "Н" | "Н,С,В"
         String[] separatedLTs = lts.split(",| ");
         double[][] allLTsPoints = new double[separatedLTs.length][4];
         for (int i = 0; i < separatedLTs.length; i++) {
@@ -232,18 +236,20 @@ public class Criteria {
         // "( 0.0 ; 0.5 ; 0.5 ; 1.0 )"
         String[] separateNumbers = aggregationExpression.split(";| |\\(|\\)|\\[|\\]");
         int count = 0;
+
         for (int i = 0; i < separateNumbers.length; i++) {
             if (!separateNumbers[i].equals("")) count++;
         }
+
         String[] nonEmptyNumbers = new String[count];
         count = 0;
+
         for (int i = 0; i < separateNumbers.length; i++) {
             if (!separateNumbers[i].equals("")) {
                 nonEmptyNumbers[count] = separateNumbers[i];
                 count++;
             }
         }
-        //System.out.println(Arrays.toString(nonEmptyNumbers));
 
         double[] numbers = new double[nonEmptyNumbers.length];
         for (int i = 0; i < numbers.length; i++) {
@@ -260,9 +266,11 @@ public class Criteria {
      */
     private String[] getLocalLTs() {
         String[] local = new String[lts.size()];
+
         for (int i = 0; i < local.length; i++) {
             local[i] = lts.get(i).getShortName();
         }
+
         return local;
     }
 
