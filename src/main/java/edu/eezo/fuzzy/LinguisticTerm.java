@@ -215,6 +215,6 @@ public class LinguisticTerm implements Cloneable {
     }
 
     protected LinguisticTerm makeClone() {
-        return new LinguisticTerm(this.name, this.shortName, this.type, this.points);
+        return new LinguisticTerm(this.name, this.shortName, this.type, this.points.clone());
     }
 }

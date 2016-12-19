@@ -8,7 +8,7 @@ import java.util.List;
  * Representation of criteria in fuzzy logic system.
  * Created by Eezo on 26.11.2016.
  */
-public class Criteria {
+public class Criteria implements Cloneable {
     /**
      * Short name.
      * Usually, contains one letter and one number (f.e.: "Q1").

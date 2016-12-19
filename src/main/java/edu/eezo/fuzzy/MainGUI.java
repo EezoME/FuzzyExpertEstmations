@@ -223,8 +223,7 @@ public class MainGUI extends JFrame {
                 if (stage >= 3 && criterias[comboBoxCriteria.getSelectedIndex()].getLts() != null)
                     Chart.main(criterias[comboBoxCriteria.getSelectedIndex()].toString(),
                             criterias[comboBoxCriteria.getSelectedIndex()].getName(),
-                            criterias[comboBoxCriteria.getSelectedIndex()].getLts(),
-                            criteriasNormalized[comboBoxCriteria.getSelectedIndex()].getLts());
+                            criterias[comboBoxCriteria.getSelectedIndex()].getLts());
             }
         });
         buttonEnableDataInput.addActionListener(new ActionListener() {
@@ -258,7 +257,7 @@ public class MainGUI extends JFrame {
     /* CRITERIA METHODS */
 
     private void showCriteria(int index, int stage) {
-        if (stage < 2) return;
+        if (stage < 2 || index < 0) return;
 
         textFieldCriteriaName.setText(criterias[index].getName());
 
@@ -294,12 +293,12 @@ public class MainGUI extends JFrame {
 
             if (criterias[index].getLts().get(ltIndex).getPoints() == null) return;
 
-            textFieldLTP1.setText(criterias[index].getLts().get(ltIndex).getPoints()[0] + "");
-            textFieldLTP2.setText(criterias[index].getLts().get(ltIndex).getPoints()[1] + "");
-            textFieldLTP3.setText(criterias[index].getLts().get(ltIndex).getPoints()[2] + "");
+            textFieldLTP1.setText(round(criterias[index].getLts().get(ltIndex).getPoints()[0], 3) + "");
+            textFieldLTP2.setText(round(criterias[index].getLts().get(ltIndex).getPoints()[1], 3) + "");
+            textFieldLTP3.setText(round(criterias[index].getLts().get(ltIndex).getPoints()[2], 3) + "");
 
             if (comboBoxLTType.getSelectedItem().equals(LTType.TRAPEZOIDAL)) {
-                textFieldLTP4.setText(criterias[index].getLts().get(ltIndex).getPoints()[3] + "");
+                textFieldLTP4.setText(round(criterias[index].getLts().get(ltIndex).getPoints()[3], 3) + "");
             }
         }
     }
