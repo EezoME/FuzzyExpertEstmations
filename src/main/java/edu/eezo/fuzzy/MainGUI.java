@@ -3,8 +3,7 @@ package edu.eezo.fuzzy;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -51,10 +50,13 @@ public class MainGUI extends JFrame {
     private JLabel labelPessimisticResult;
     private JButton buttonEnableDataInput;
     private JTextArea textAreaResult;
+    private JLabel labelExample;
+    private JTable tableResult;
 
     private int alternativesCount;
     private int criteriaCount;
     private Criteria[] criterias;
+    private Criteria[] criteriasNormalized;
     private boolean[] criteriaChecked;
 
     /**
@@ -221,7 +223,8 @@ public class MainGUI extends JFrame {
                 if (stage >= 3 && criterias[comboBoxCriteria.getSelectedIndex()].getLts() != null)
                     Chart.main(criterias[comboBoxCriteria.getSelectedIndex()].toString(),
                             criterias[comboBoxCriteria.getSelectedIndex()].getName(),
-                            criterias[comboBoxCriteria.getSelectedIndex()].getLts());
+                            criterias[comboBoxCriteria.getSelectedIndex()].getLts(),
+                            criteriasNormalized[comboBoxCriteria.getSelectedIndex()].getLts());
             }
         });
         buttonEnableDataInput.addActionListener(new ActionListener() {
@@ -231,6 +234,23 @@ public class MainGUI extends JFrame {
                 toggleLTComponents(true);
                 toggleCriteriaComponents(true);
                 progressBarDone.setValue(0);
+            }
+        });
+
+        tableDecisionMatrixInitial.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (tableDecisionMatrixInitial.getSelectedColumn() - 1 >= 0 && tableDecisionMatrixInitial.getSelectedColumn() - 1 < criterias.length) {
+                    setExample(tableDecisionMatrixInitial.getSelectedColumn() - 1);
+                }
+            }
+        });
+        tableDecisionMatrixInitial.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (tableDecisionMatrixInitial.getSelectedColumn() - 1 >= 0 && tableDecisionMatrixInitial.getSelectedColumn() - 1 < criterias.length) {
+                    setExample(tableDecisionMatrixInitial.getSelectedColumn() - 1);
+                }
             }
         });
     }
@@ -355,8 +375,11 @@ public class MainGUI extends JFrame {
             return;
         }
 
+        criteriasNormalized = new Criteria[criterias.length];
+
         for (int i = 0; i < criterias.length; i++) {
-            LinguisticTerm.normalizeData(criterias[i].getLts());
+            criteriasNormalized[i] = criterias[i].makeClone();
+            LinguisticTerm.normalizeData(criteriasNormalized[i].getLts());
         }
 
         toggleSecondTabComponents(true);
@@ -365,6 +388,7 @@ public class MainGUI extends JFrame {
         standartTableInitialization(tableLTFull);
         standartTableInitialization(tableAggregation);
         standartTableInitialization(tableAlpha);
+        generateEmptyResultTable();
 
         ((DefaultTableModel) tableConvolution.getModel()).setColumnIdentifiers(new String[]{"E", "I опт", "I песс"});
         ((DefaultTableModel) tableConvolution.getModel()).setRowCount(alternativesCount);
@@ -384,7 +408,7 @@ public class MainGUI extends JFrame {
         for (int i = 0; i < tableLT.getRowCount(); i++) {
             for (int j = 1; j < tableLT.getColumnCount(); j++) {
                 tableLTFull.setValueAt(
-                        criterias[j - 1].getLTWithIntermediateValues(tableLT.getValueAt(i, j).toString()),
+                        criteriasNormalized[j - 1].getLTWithIntermediateValues(tableLT.getValueAt(i, j).toString()),
                         i, j);
             }
         }
@@ -393,7 +417,7 @@ public class MainGUI extends JFrame {
         for (int i = 0; i < tableLTFull.getRowCount(); i++) {
             for (int j = 1; j < tableLTFull.getColumnCount(); j++) {
                 tableAggregation.setValueAt(
-                        criterias[j - 1].aggregateLTs(tableLTFull.getValueAt(i, j).toString()),
+                        criteriasNormalized[j - 1].aggregateLTs(tableLTFull.getValueAt(i, j).toString()),
                         i, j);
             }
         }
@@ -431,11 +455,11 @@ public class MainGUI extends JFrame {
                 }
                 convolutionOptimisticResults[i] = Criteria.optimisticConvolution(aggrExps);
                 tableConvolution.setValueAt(
-                        "[ " + convolutionOptimisticResults[i][0] + " ; " + convolutionOptimisticResults[i][1] + " ]",
+                        "[ " + round(convolutionOptimisticResults[i][0], 3) + " ; " + round(convolutionOptimisticResults[i][1], 3) + " ]",
                         i, 1);
                 convolutionPessimisticResults[i] = Criteria.pessimisticConvolution(aggrExps);
                 tableConvolution.setValueAt(
-                        "[ " + convolutionPessimisticResults[i][0] + " ; " + convolutionPessimisticResults[i][1] + " ]",
+                        "[ " + round(convolutionPessimisticResults[i][0], 3) + " ; " + round(convolutionPessimisticResults[i][1], 3) + " ]",
                         i, 2);
             }
 
@@ -467,8 +491,10 @@ public class MainGUI extends JFrame {
 
             textAreaResult.append("По оптимистической: ");
 
-            for (int j = 0; j < optimisticIndexes.length; j++) {
-                textAreaResult.append("E" + optimisticIndexes[j] + " > ");
+            for (int j = 1; j < tableResult.getColumnCount(); j++) {
+                tableResult.setValueAt(round(optRes[j - 1], 3), 0, j);
+                tableResult.setValueAt(round(pesRes[j - 1], 3), 1, j);
+                textAreaResult.append("E" + optimisticIndexes[j - 1] + " > ");
             }
 
             textAreaResult.replaceRange("", textAreaResult.getText().length() - 3, textAreaResult.getText().length());
@@ -484,7 +510,7 @@ public class MainGUI extends JFrame {
 
             labelOptimisticResult.setText("Победитель по оптиместической: E" + winOptimistic);
             labelPessimisticResult.setText("Победитель по пессимистической: E" + winPessimistic);
-        } catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(null, "Альфа должно быть числом.");
             return;
         }
@@ -502,6 +528,18 @@ public class MainGUI extends JFrame {
         });
     }
 
+    private void setExample(int selectedIndex) {
+        String example = criterias[selectedIndex].getMark() + " є {";
+
+        for (int i = 0; i < criterias[selectedIndex].getLts().size(); i++) {
+            example += criterias[selectedIndex].getLts().get(i).getShortName() + ",";
+        }
+
+        example = example.substring(0, example.lastIndexOf(',')) + "}";
+
+        labelExample.setText(example);
+    }
+
     private void standartTableInitialization(JTable table) {
         String[] identifiers = new String[criteriaCount + 1];
         identifiers[0] = "E\\Q";
@@ -515,6 +553,22 @@ public class MainGUI extends JFrame {
         for (int i = 0; i < alternativesCount; i++) {
             model.setValueAt("E" + (i + 1), i, 0);
         }
+    }
+
+    /**
+     * Generates a result table with initial data.
+     */
+    private void generateEmptyResultTable() {
+        DefaultTableModel model = (DefaultTableModel) tableResult.getModel();
+        String[] identifiers = new String[alternativesCount + 1];
+        identifiers[0] = "Метод";
+        for (int i = 1; i < identifiers.length; i++) {
+            identifiers[i] = "E" + i;
+        }
+        model.setColumnIdentifiers(identifiers);
+        model.setRowCount(3);
+        model.setValueAt("По оптимистической", 0, 0);
+        model.setValueAt("По пессимистической", 1, 0);
     }
 
     private void updateProgressBar() {
@@ -662,4 +716,9 @@ public class MainGUI extends JFrame {
         return true;
     }
 
+    private double round(double number, int dec) {
+        number *= Math.pow(10, dec);
+        number = Math.round(number);
+        return number / Math.pow(10, dec);
+    }
 }

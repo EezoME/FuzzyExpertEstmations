@@ -24,14 +24,11 @@ import java.util.ArrayList;
 public class Chart extends ApplicationFrame {
     private java.util.List<LinguisticTerm> linguisticTerms;
 
-    public Chart(String applicationTitle, String chartTitle, java.util.List<LinguisticTerm> linguisticTerms, boolean isNormalize) {
+    public Chart(String applicationTitle, String chartTitle, java.util.List<LinguisticTerm> linguisticTerms) {
         super(applicationTitle);
-        this.linguisticTerms = new ArrayList<>();
-        for (int i = 0; i < linguisticTerms.size(); i++) {
-            this.linguisticTerms.add(linguisticTerms.get(i).makeClone());
-        }
+        this.linguisticTerms = linguisticTerms;
 
-        JFreeChart xylineChart = ChartFactory.createXYLineChart(chartTitle, "Условные единицы", "Функция принадлежности", createDataset(isNormalize),
+        JFreeChart xylineChart = ChartFactory.createXYLineChart(chartTitle, "Условные единицы", "Функция принадлежности", createDataset(),
                 PlotOrientation.VERTICAL, true, true, false);
 
         ChartPanel chartPanel = new ChartPanel(xylineChart);
@@ -48,15 +45,11 @@ public class Chart extends ApplicationFrame {
      *
      * @return data set
      */
-    private XYDataset createDataset(boolean isNormalize) {
+    private XYDataset createDataset() {
         final XYSeriesCollection dataset = new XYSeriesCollection();
 
-        if (!isNormalize) {
-            linguisticTerms = LinguisticTerm.normalizeData(linguisticTerms);
-        }
         for (int i = 0; i < linguisticTerms.size(); i++) {
             XYSeries series = new XYSeries(linguisticTerms.get(i).getShortName());
-
 
             double[] points = linguisticTerms.get(i).getPoints();
             if (points.length == 3) {
@@ -85,14 +78,15 @@ public class Chart extends ApplicationFrame {
         }
     }
 
-    public static void main(String criteriaMark, String criteriaName, java.util.List<LinguisticTerm> linguisticTerms) {
-        Chart chart = new Chart(criteriaMark + " (в обычном виде)", criteriaName, linguisticTerms, true);
+    public static void main(String criteriaMark, String criteriaName, java.util.List<LinguisticTerm> linguisticTerms,
+                            java.util.List<LinguisticTerm> normalizedLinguisticTerms) {
+        Chart chart = new Chart(criteriaMark + " (в обычном виде)", criteriaName, linguisticTerms);
         chart.pack();
         RefineryUtilities.centerFrameOnScreen(chart);
         chart.setLocation(chart.getX() - 288, chart.getY());
         chart.setVisible(true);
 
-        Chart chart2 = new Chart(criteriaMark + " (нормализованные значения)", criteriaName, linguisticTerms, false);
+        Chart chart2 = new Chart(criteriaMark + " (нормализованные значения)", criteriaName, normalizedLinguisticTerms);
         chart2.pack();
         RefineryUtilities.centerFrameOnScreen(chart2);
         chart2.setLocation(chart2.getX() + 288, chart2.getY());

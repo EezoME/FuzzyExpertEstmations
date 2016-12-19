@@ -1,6 +1,7 @@
 package edu.eezo.fuzzy;
 
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,6 +26,12 @@ public class Criteria {
 
     public Criteria(int index) {
         this.mark = "Q" + index;
+    }
+
+    private Criteria(String mark, String name, List<LinguisticTerm> lts) {
+        this.mark = mark;
+        this.name = name;
+        this.lts = lts;
     }
 
     /**
@@ -274,6 +281,10 @@ public class Criteria {
         return local;
     }
 
+    public String getMark() {
+        return mark;
+    }
+
     public String getName() {
         return name;
     }
@@ -293,5 +304,13 @@ public class Criteria {
     @Override
     public String toString() {
         return this.mark;
+    }
+
+    protected Criteria makeClone() {
+        List<LinguisticTerm> linguisticTerms = new ArrayList<>();
+        for (int i = 0; i < lts.size(); i++) {
+            linguisticTerms.add(lts.get(i).makeClone());
+        }
+        return new Criteria(this.mark, this.name, linguisticTerms);
     }
 }
